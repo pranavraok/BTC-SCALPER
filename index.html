@@ -116,6 +116,40 @@ button{font:inherit;cursor:pointer;border:none}
 .tv-wrap{height:50vh;min-height:400px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:440px){.app{padding:var(--s3)}.g2,.lvl-grid,.sess-grid,.metals-row{gap:var(--s2)}.tv-wrap{height:42vh}}
+
+.hist-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s3)}
+.hist-empty{padding:var(--s5);text-align:center;color:var(--mu);font-size:var(--sm);background:var(--sur2);border-radius:var(--rl);border:1px dashed var(--bor)}
+.hist-grid{display:grid;gap:var(--s3)}.hist-more{display:flex;justify-content:center;margin-top:var(--s3)}
+.sig-card{background:var(--sur2);border:1px solid var(--bor);border-radius:var(--rxl);padding:var(--s4);display:grid;gap:var(--s3);position:relative;overflow:hidden}
+.sig-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px}
+.sig-card.buy-card::before{background:var(--bu)}.sig-card.sell-card::before{background:var(--se)}
+.sig-top{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s2)}
+.sig-dir{font-size:var(--lg);font-weight:900;line-height:1}.sig-time{font-size:var(--xs);color:var(--mu);margin-top:.15rem}
+.sig-right{display:flex;flex-direction:column;align-items:flex-end;gap:.3rem}
+.outcome-badge{display:inline-flex;align-items:center;padding:.3rem .7rem;border-radius:var(--rf);font-size:var(--xs);font-weight:800}
+.ob-pending{background:var(--off);color:var(--mu);border:1px solid var(--bor)}
+.ob-t1{background:rgb(61 220 151/.15);color:var(--bu);border:1px solid rgb(61 220 151/.3)}
+.ob-t2{background:rgb(61 220 151/.28);color:var(--bu);border:1px solid rgb(61 220 151/.5)}
+.ob-sl{background:rgb(255 123 114/.15);color:var(--se);border:1px solid rgb(255 123 114/.3)}
+.sig-levels,.op-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2)}
+.slv-item{background:var(--off);border-radius:.6rem;padding:.4rem .5rem;display:flex;flex-direction:column;gap:.1rem}
+.slv-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--mu);font-weight:700}
+.slv-val{font-size:var(--sm);font-weight:800}
+.slv-entry .slv-val{color:var(--pr)}.slv-t .slv-val{color:var(--bu)}.slv-s .slv-val{color:var(--se)}
+.open-pos{background:var(--sur2);border:2px solid var(--bu);border-radius:var(--rxl);padding:var(--s4);display:grid;gap:var(--s3);position:relative;overflow:hidden}
+.open-pos.sell-open{border-color:var(--se)}
+.open-pos::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px}
+.open-pos.buy-open::before{background:var(--bu)}.open-pos.sell-open::before{background:var(--se)}
+.op-top{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s3)}
+.op-live-row{display:flex;align-items:center;gap:.4rem}
+.op-dot{width:8px;height:8px;border-radius:50%;background:var(--bu);animation:opulse 1.5s infinite}
+.sell-open .op-dot{background:var(--se)}
+.op-badge{font-size:var(--xs);font-weight:800;color:var(--bu);text-transform:uppercase;letter-spacing:.06em}
+.sell-open .op-badge{color:var(--se)}
+.op-dir{font-size:var(--lg);font-weight:900;line-height:1}
+.op-time{font-size:var(--xs);color:var(--mu);margin-top:.15rem}.op-hidden{display:none}
+@keyframes opulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+
 </style>
 </head>
 <body>
@@ -206,6 +240,37 @@ button{font:inherit;cursor:pointer;border:none}
       <div class="news-hdr"><div class="lbl">Crypto &amp; market news</div><button class="btn-sm" id="btcNR">&#8635; Refresh</button></div>
       <div class="news-grid" id="btcNews"><div class="news-st">Loading news...</div></div>
     </div>
+    <div id="btcOpenPos" class="op-hidden">
+      <div class="open-pos" id="btcOpenCard">
+        <div class="op-top">
+          <div>
+            <div class="op-live-row"><div class="op-dot"></div><div class="op-badge">&#128994; Open position</div></div>
+            <div class="op-dir" id="btcOpDir">--</div>
+            <div class="op-time" id="btcOpTime">--</div>
+          </div>
+          <div style="text-align:right">
+            <div class="outcome-badge ob-pending" id="btcOpOutcome">&#8987; Pending</div>
+            <div class="subtle" style="margin-top:.3rem;font-size:var(--xs)" id="btcOpProb">--</div>
+          </div>
+        </div>
+        <div class="op-levels">
+          <div class="slv-item slv-entry"><div class="slv-lbl">Entry</div><div class="slv-val" id="btcOpEntry">--</div></div>
+          <div class="slv-item slv-t"><div class="slv-lbl">Target 1</div><div class="slv-val" id="btcOpT1">--</div></div>
+          <div class="slv-item slv-t"><div class="slv-lbl">Target 2</div><div class="slv-val" id="btcOpT2">--</div></div>
+          <div class="slv-item slv-s"><div class="slv-lbl">Stop 1</div><div class="slv-val" id="btcOpS1">--</div></div>
+          <div class="slv-item slv-s"><div class="slv-lbl">Stop 2</div><div class="slv-val" id="btcOpS2">--</div></div>
+          <div class="slv-item"><div class="slv-lbl">Live price</div><div class="slv-val" id="btcOpLive" style="color:var(--tx)">--</div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="hist-hdr">
+        <div class="lbl">&#128337; History &middot; BTC</div>
+        <button class="btn-sm" id="btcClearHist">Clear</button>
+      </div>
+      <div class="hist-grid" id="btcHistGrid"><div class="hist-empty">No signals yet.</div></div>
+      <div class="hist-more" id="btcHistMore" style="display:none"><button class="btn-sm" id="btcHLM">&#8595; Load older</button></div>
+    </div>
     <button class="btn-p" id="btcWhy">Why this setup?</button>
     <button class="btn-g" id="btcRetry">&#8635; Refresh price</button>
   </div>
@@ -280,6 +345,37 @@ button{font:inherit;cursor:pointer;border:none}
         <div class="sc" data-s="jp"><div class="s-nm">Tokyo</div><div class="s-st" id="gjpS">--</div><div class="s-wn" id="gjpW">--</div><div class="s-tm" id="gjpT">--</div></div>
       </div>
     </div>
+    <div id="goldOpenPos" class="op-hidden">
+      <div class="open-pos" id="goldOpenCard">
+        <div class="op-top">
+          <div>
+            <div class="op-live-row"><div class="op-dot"></div><div class="op-badge">&#128994; Open position</div></div>
+            <div class="op-dir" id="goldOpDir">--</div>
+            <div class="op-time" id="goldOpTime">--</div>
+          </div>
+          <div style="text-align:right">
+            <div class="outcome-badge ob-pending" id="goldOpOutcome">&#8987; Pending</div>
+            <div class="subtle" style="margin-top:.3rem;font-size:var(--xs)" id="goldOpProb">--</div>
+          </div>
+        </div>
+        <div class="op-levels">
+          <div class="slv-item slv-entry"><div class="slv-lbl">Entry</div><div class="slv-val" id="goldOpEntry">--</div></div>
+          <div class="slv-item slv-t"><div class="slv-lbl">Target 1</div><div class="slv-val" id="goldOpT1">--</div></div>
+          <div class="slv-item slv-t"><div class="slv-lbl">Target 2</div><div class="slv-val" id="goldOpT2">--</div></div>
+          <div class="slv-item slv-s"><div class="slv-lbl">Stop 1</div><div class="slv-val" id="goldOpS1">--</div></div>
+          <div class="slv-item slv-s"><div class="slv-lbl">Stop 2</div><div class="slv-val" id="goldOpS2">--</div></div>
+          <div class="slv-item"><div class="slv-lbl">Live price</div><div class="slv-val" id="goldOpLive" style="color:var(--tx)">--</div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="hist-hdr">
+        <div class="lbl">&#128337; History &middot; Gold</div>
+        <button class="btn-sm" id="goldClearHist">Clear</button>
+      </div>
+      <div class="hist-grid" id="goldHistGrid"><div class="hist-empty">No signals yet.</div></div>
+      <div class="hist-more" id="goldHistMore" style="display:none"><button class="btn-sm" id="goldHLM">&#8595; Load older</button></div>
+    </div>
     <button class="btn-p" id="goldWhy">Why this setup?</button>
     <button class="btn-g" id="goldRetry">&#8635; Refresh</button>
   </div>
@@ -353,6 +449,37 @@ button{font:inherit;cursor:pointer;border:none}
         <div class="sc" data-s="eu"><div class="s-nm">EU overlap</div><div class="s-st" id="sveuS">--</div><div class="s-wn" id="sveuW">--</div><div class="s-tm" id="sveuT">--</div></div>
         <div class="sc" data-s="jp"><div class="s-nm">Tokyo</div><div class="s-st" id="svjpS">--</div><div class="s-wn" id="svjpW">--</div><div class="s-tm" id="svjpT">--</div></div>
       </div>
+    </div>
+    <div id="silverOpenPos" class="op-hidden">
+      <div class="open-pos" id="silverOpenCard">
+        <div class="op-top">
+          <div>
+            <div class="op-live-row"><div class="op-dot"></div><div class="op-badge">&#128994; Open position</div></div>
+            <div class="op-dir" id="silverOpDir">--</div>
+            <div class="op-time" id="silverOpTime">--</div>
+          </div>
+          <div style="text-align:right">
+            <div class="outcome-badge ob-pending" id="silverOpOutcome">&#8987; Pending</div>
+            <div class="subtle" style="margin-top:.3rem;font-size:var(--xs)" id="silverOpProb">--</div>
+          </div>
+        </div>
+        <div class="op-levels">
+          <div class="slv-item slv-entry"><div class="slv-lbl">Entry</div><div class="slv-val" id="silverOpEntry">--</div></div>
+          <div class="slv-item slv-t"><div class="slv-lbl">Target 1</div><div class="slv-val" id="silverOpT1">--</div></div>
+          <div class="slv-item slv-t"><div class="slv-lbl">Target 2</div><div class="slv-val" id="silverOpT2">--</div></div>
+          <div class="slv-item slv-s"><div class="slv-lbl">Stop 1</div><div class="slv-val" id="silverOpS1">--</div></div>
+          <div class="slv-item slv-s"><div class="slv-lbl">Stop 2</div><div class="slv-val" id="silverOpS2">--</div></div>
+          <div class="slv-item"><div class="slv-lbl">Live price</div><div class="slv-val" id="silverOpLive" style="color:var(--tx)">--</div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="hist-hdr">
+        <div class="lbl">&#128337; History &middot; Silver</div>
+        <button class="btn-sm" id="silverClearHist">Clear</button>
+      </div>
+      <div class="hist-grid" id="silverHistGrid"><div class="hist-empty">No signals yet.</div></div>
+      <div class="hist-more" id="silverHistMore" style="display:none"><button class="btn-sm" id="silverHLM">&#8595; Load older</button></div>
     </div>
     <button class="btn-p" id="silverWhy">Why this setup?</button>
     <button class="btn-g" id="silverRetry">&#8635; Refresh</button>
@@ -593,7 +720,7 @@ async function runAnalysis(price, k5, k15, k1h, sessScore, active, market, extra
     `Targets and stops derived from real swing highs/lows, not fixed ATR multiples.`,
     `${sessLine}. Blended ATR = ${Math.round(bATR)}.`
   ];
-  return {buy, sell, conf, clarity, dominant, buyLevels:st.lBuy, sellLevels:st.lSell, reasons, sessLine};
+  return {buy, sell, conf, clarity, dominant, buyLevels:st.lBuy, sellLevels:st.lSell, reasons, sessLine, _market:market, _price:price};
 }
 function renderResult(ids, r, dp=2) {
   $(ids.bP).textContent=`${r.buy}%`;   $(ids.sP).textContent=`${r.sell}%`;
@@ -607,6 +734,7 @@ function renderResult(ids, r, dp=2) {
   if(V){$(ids.SE).textContent=fmtN(V.entry,dp);$(ids.ST1).textContent=fmtN(V.t1,dp);$(ids.ST2).textContent=fmtN(V.t2,dp);$(ids.SS1).textContent=fmtN(V.s1,dp);$(ids.SS2).textContent=fmtN(V.s2,dp);}
   $(ids.lock).textContent='🔒 Entry locked'; $(ids.lock).className='lock-b';
   $(ids.lockNote).textContent='Wait for price to reach entry zone.';
+  if(r._market){hSaveSignal(r._market,r,r._price,dp);hRender(r._market,r._price);}
 }
 
 // ─── BTC ──────────────────────────────────────────────────────────────────────
@@ -778,7 +906,7 @@ async function fetchNews(){
 }
 
 // ─── NAVIGATION ───────────────────────────────────────────────────────────────
-$('openBtc').addEventListener('click', async()=>{
+$('openBtc').addEventListener('click', async()=>{ hOpenMarket('btc');
   setScreen('btcScreen');
   if(!ST.btc.chartReady&&window.TradingView){mountChart('btcChart','BINANCE:BTCUSDT');ST.btc.chartReady=true;}
   renderSess('btcSG',BTC_SE_EL,SW_BTC);
@@ -789,7 +917,7 @@ $('openBtc').addEventListener('click', async()=>{
   ST.btc.stimer=setInterval(()=>renderSess('btcSG',BTC_SE_EL,SW_BTC),1000);
 });
 
-$('openGold').addEventListener('click', async()=>{
+$('openGold').addEventListener('click', async()=>{ hOpenMarket('gold');
   setScreen('goldScreen');
   renderSess('goldSG',M_SE_G,SW_MET);
   await updateMetal('gold');
@@ -798,7 +926,7 @@ $('openGold').addEventListener('click', async()=>{
   ST.gold.stimer=setInterval(()=>renderSess('goldSG',M_SE_G,SW_MET),1000);
 });
 
-$('openSilver').addEventListener('click', async()=>{
+$('openSilver').addEventListener('click', async()=>{ hOpenMarket('silver');
   setScreen('silverScreen');
   renderSess('silverSG',M_SE_S,SW_MET);
   await updateMetal('silver');
@@ -825,6 +953,292 @@ $('whyModal').addEventListener('click',e=>{if(e.target===$('whyModal'))$('whyMod
 
 // Init BTC session clocks on page load
 renderSess('btcSG',BTC_SE_EL,SW_BTC);
+
+// ═══════════════════════════════════════════════════════════════════
+// SIGNAL HISTORY — Pure fetch() REST API (no Supabase SDK needed)
+// ═══════════════════════════════════════════════════════════════════
+
+// ── Globals ────────────────────────────────────────────────────────
+var HPAGE  = {btc:1, gold:1, silver:1};
+var HPP    = 6;
+var HDP    = {btc:2, gold:2, silver:3};
+
+var SB_URL = 'https://tbzgvmcmlkxaexdnkesp.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRiemd2bWNtbGt4YWV4ZG5rZXNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDgwOTUsImV4cCI6MjA5MzEyNDA5NX0.NbZtv_HjVgAi7_WCIt_ysDTlEzpWys815SEuYt7MUwY';
+
+// ── REST helpers (pure fetch, no SDK) ─────────────────────────────
+function sbHeaders() {
+  return {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
+}
+
+async function sbSelect(params) {
+  // params: market, outcome, limit, offset, orderBy
+  try {
+    var qs = 'market=eq.' + params.market;
+    if(params.outcome) qs += '&outcome=eq.' + params.outcome;
+    if(params.orderBy) qs += '&order=' + params.orderBy + '.desc';
+    if(params.limit)   qs += '&limit=' + params.limit;
+    if(params.offset)  qs += '&offset=' + params.offset;
+    var url = SB_URL + '/rest/v1/scalper_signals?select=*&' + qs;
+    var r = await fetch(url, { headers: sbHeaders() });
+    if(!r.ok) return [];
+    return await r.json();
+  } catch(e) { console.warn('sbSelect:', e); return []; }
+}
+
+async function sbCount(market) {
+  try {
+    var url = SB_URL + '/rest/v1/scalper_signals?select=id&market=eq.' + market;
+    var r = await fetch(url, { headers: Object.assign({}, sbHeaders(), {'Prefer':'count=exact'}) });
+    if(!r.ok) return 0;
+    var ct = r.headers.get('content-range');
+    return ct ? parseInt(ct.split('/')[1]||'0') : 0;
+  } catch(e) { return 0; }
+}
+
+async function sbInsert(row) {
+  try {
+    await fetch(SB_URL + '/rest/v1/scalper_signals', {
+      method: 'POST',
+      headers: sbHeaders(),
+      body: JSON.stringify(row)
+    });
+  } catch(e) { console.warn('sbInsert:', e); }
+}
+
+async function sbUpdate(id, updates) {
+  try {
+    await fetch(SB_URL + '/rest/v1/scalper_signals?id=eq.' + id, {
+      method: 'PATCH',
+      headers: sbHeaders(),
+      body: JSON.stringify(updates)
+    });
+  } catch(e) { console.warn('sbUpdate:', e); }
+}
+
+async function sbDelete(market) {
+  try {
+    await fetch(SB_URL + '/rest/v1/scalper_signals?market=eq.' + market, {
+      method: 'DELETE',
+      headers: sbHeaders()
+    });
+  } catch(e) { console.warn('sbDelete:', e); }
+}
+
+// ── Helpers ────────────────────────────────────────────────────────
+function istFull() {
+  return new Date().toLocaleString('en-IN', {
+    timeZone:'Asia/Kolkata', day:'2-digit', month:'short',
+    year:'numeric', hour:'numeric', minute:'2-digit', hour12:true
+  });
+}
+
+function timeAgo(tsMs) {
+  if(!tsMs) return '';
+  var diff = Date.now() - tsMs;
+  var m = Math.floor(diff/60000);
+  if(m < 1)  return 'just now';
+  if(m < 60) return m + 'm ago';
+  var h = Math.floor(m/60);
+  if(h < 24) return h + 'h ' + (m%60 ? (m%60)+'m ' : '') + 'ago';
+  return Math.floor(h/24) + 'd ago';
+}
+
+function fmtP(v, dp) {
+  return isFinite(+v)
+    ? '$' + new Intl.NumberFormat('en-US', {minimumFractionDigits:dp, maximumFractionDigits:dp}).format(+v)
+    : '--';
+}
+
+// ── Save signal ────────────────────────────────────────────────────
+async function hSaveSignal(market, res, price, dp) {
+  try {
+    // Dedup: check last signal
+    var last = await sbSelect({market:market, limit:1, orderBy:'ts_ms'});
+    if(last.length) {
+      var l = last[0];
+      if(l.dir === res.dominant && Math.abs(l.price - price)/price < 0.001) return;
+    }
+    var lv = res.dominant === 'BUY' ? res.buyLevels : res.sellLevels;
+    if(!lv) return;
+    await sbInsert({
+      id: Date.now(),
+      market: market,
+      dir: res.dominant,
+      price: price,
+      entry: lv.entry, t1: lv.t1, t2: lv.t2, s1: lv.s1, s2: lv.s2,
+      buy_p: res.buy, sell_p: res.sell, conf: res.conf, clarity: res.clarity,
+      ts: istFull(), ts_ms: Date.now(),
+      outcome: 'pending', dp: dp || 2
+    });
+  } catch(e) { console.warn('hSaveSignal:', e); }
+}
+
+// ── Live outcome check ─────────────────────────────────────────────
+async function hCheckLive(market, cur) {
+  try {
+    var pending = await sbSelect({market:market, outcome:'pending'});
+    for(var i=0; i<pending.length; i++) {
+      var s = pending[i], b = s.dir==='BUY', outcome = null;
+      if(b ? cur>=s.t2 : cur<=s.t2)       outcome = 't2';
+      else if(b ? cur>=s.t1 : cur<=s.t1)  outcome = 't1';
+      else if(b ? cur<=s.s1 : cur>=s.s1)  outcome = 'sl';
+      if(outcome) await sbUpdate(s.id, {outcome:outcome});
+    }
+  } catch(e) { console.warn('hCheckLive:', e); }
+}
+
+// ── Retroactive kline check ────────────────────────────────────────
+async function hRetroCheck(market) {
+  try {
+    var pending = await sbSelect({market:market, outcome:'pending'});
+    if(!pending.length) return;
+    var kl = [];
+    if(market === 'btc') {
+      var r = await fetchWT('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=168', 10000);
+      if(!r.ok) return;
+      var raw = await r.json();
+      kl = raw.map(function(k){ return [+k[0], +k[2], +k[3]]; });
+    } else {
+      var r2 = await fetchWT('https://api.twelvedata.com/time_series?symbol=XAU%2FUSD&interval=1h&outputsize=90&apikey=' + TD_KEY + '&format=JSON', 12000);
+      if(!r2.ok) return;
+      var j = await r2.json();
+      if(j.status === 'error') return;
+      var vals = (j.values||[]).slice().reverse();
+      var sc = 1;
+      if(market === 'silver') {
+        sc = (ST.silver.price||1) / (ST.gold.price||1);
+      }
+      kl = vals.map(function(v){ return [new Date(v.datetime).getTime(), +v.high*sc, +v.low*sc]; });
+    }
+    for(var i=0; i<pending.length; i++) {
+      var s = pending[i], b = s.dir==='BUY', outcome = null;
+      var after = kl.filter(function(k){ return k[0] >= (s.ts_ms||0); });
+      for(var j=0; j<after.length; j++) {
+        var hi = after[j][1], lo = after[j][2];
+        if(b ? hi>=s.t2 : lo<=s.t2)      { outcome='t2'; break; }
+        if(b ? hi>=s.t1 : lo<=s.t1)      { outcome='t1'; break; }
+        if(b ? lo<=s.s1 : hi>=s.s1)      { outcome='sl'; break; }
+      }
+      if(outcome) await sbUpdate(s.id, {outcome:outcome});
+    }
+  } catch(e) { console.warn('hRetroCheck:', e); }
+}
+
+// ── Outcome badge ──────────────────────────────────────────────────
+function obBadge(o) {
+  if(o==='t2') return '<span class="outcome-badge ob-t2">&#127919; T2 Hit</span>';
+  if(o==='t1') return '<span class="outcome-badge ob-t1">&#9989; T1 Hit</span>';
+  if(o==='sl') return '<span class="outcome-badge ob-sl">&#10060; SL Hit</span>';
+  return '<span class="outcome-badge ob-pending">&#8987; Pending</span>';
+}
+
+// ── Open position card ─────────────────────────────────────────────
+async function renderOpenPos(market, cur) {
+  var wrap = document.getElementById(market+'OpenPos');
+  if(!wrap) return;
+  try {
+    var data = await sbSelect({market:market, outcome:'pending', limit:1, orderBy:'ts_ms'});
+    if(!data.length) { wrap.classList.add('op-hidden'); return; }
+    var s = data[0], b = s.dir==='BUY', dp = HDP[market]||2;
+    wrap.classList.remove('op-hidden');
+    document.getElementById(market+'OpenCard').className = 'open-pos ' + (b?'buy-open':'sell-open');
+    document.getElementById(market+'OpDir').textContent  = s.dir;
+    document.getElementById(market+'OpDir').className    = 'op-dir ' + (b?'buy-tx':'sell-tx');
+    document.getElementById(market+'OpTime').textContent = 'Signal at: ' + s.ts + ' (' + timeAgo(s.ts_ms) + ')';
+    document.getElementById(market+'OpProb').textContent = (b?s.buy_p:s.sell_p) + '% · Conf ' + s.conf + '%';
+    document.getElementById(market+'OpEntry').textContent = fmtP(s.entry, dp);
+    document.getElementById(market+'OpT1').textContent    = fmtP(s.t1, dp);
+    document.getElementById(market+'OpT2').textContent    = fmtP(s.t2, dp);
+    document.getElementById(market+'OpS1').textContent    = fmtP(s.s1, dp);
+    document.getElementById(market+'OpS2').textContent    = fmtP(s.s2, dp);
+    document.getElementById(market+'OpLive').textContent  = fmtP(cur || s.price, dp);
+  } catch(e) { wrap.classList.add('op-hidden'); console.warn('renderOpenPos:', e); }
+}
+
+// ── Signal card HTML ───────────────────────────────────────────────
+function sigCard(s) {
+  var b = s.dir==='BUY', dp = s.dp||2;
+  var f = function(v) { return isFinite(+v) ? new Intl.NumberFormat('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp}).format(+v) : '--'; };
+  var note = s.outcome==='t2' ? 'Full target reached &#127919;'
+           : s.outcome==='t1' ? 'First target reached &#9989;'
+           : s.outcome==='sl' ? 'Stop loss hit &#10060;'
+           : 'Waiting for price to reach levels…';
+  return '<div class="sig-card ' + (b?'buy-card':'sell-card') + '">'
+    + '<div class="sig-top"><div>'
+    + '<div class="sig-dir ' + (b?'buy-tx':'sell-tx') + '">' + s.dir + '</div>'
+    + '<div class="sig-time">&#128337; ' + s.ts + ' <span style="color:var(--pr);font-weight:700">(' + timeAgo(s.ts_ms) + ')</span></div>'
+    + '<div class="sig-time" style="margin-top:.1rem">At $' + f(s.price) + ' · ' + (b?s.buy_p:s.sell_p) + '% · Conf ' + s.conf + '%</div>'
+    + '</div><div class="sig-right">' + obBadge(s.outcome)
+    + '<div class="subtle" style="font-size:10px;margin-top:.3rem">' + (s.clarity||'') + '</div></div></div>'
+    + '<div class="sig-levels">'
+    + '<div class="slv-item slv-entry"><div class="slv-lbl">Entry</div><div class="slv-val">$' + f(s.entry) + '</div></div>'
+    + '<div class="slv-item slv-t"><div class="slv-lbl">Target 1</div><div class="slv-val">$' + f(s.t1) + '</div></div>'
+    + '<div class="slv-item slv-t"><div class="slv-lbl">Target 2</div><div class="slv-val">$' + f(s.t2) + '</div></div>'
+    + '<div class="slv-item slv-s"><div class="slv-lbl">Stop 1</div><div class="slv-val">$' + f(s.s1) + '</div></div>'
+    + '<div class="slv-item slv-s"><div class="slv-lbl">Stop 2</div><div class="slv-val">$' + f(s.s2) + '</div></div>'
+    + '<div class="slv-item"><div class="slv-lbl">Mkt price</div><div class="slv-val" style="color:var(--tx)">$' + f(s.price) + '</div></div>'
+    + '</div>'
+    + '<div class="subtle" style="font-size:var(--xs);border-top:1px solid var(--div);padding-top:var(--s2)">' + note + '</div>'
+    + '</div>';
+}
+
+// ── Render history list ────────────────────────────────────────────
+async function hRender(market, cur) {
+  var grid = document.getElementById(market+'HistGrid');
+  var more = document.getElementById(market+'HistMore');
+  if(!grid) return;
+  if(cur != null) await hCheckLive(market, cur);
+  await renderOpenPos(market, cur);
+  try {
+    var total  = await sbCount(market);
+    var offset = (HPAGE[market]-1) * HPP;
+    var data   = await sbSelect({market:market, limit:HPP, offset:offset, orderBy:'ts_ms'});
+    if(!data.length) {
+      grid.innerHTML = '<div class="hist-empty">No signals yet. They appear automatically after each analysis.</div>';
+      if(more) more.style.display='none'; return;
+    }
+    grid.innerHTML = data.map(sigCard).join('');
+    if(more) more.style.display = (total > offset + HPP) ? 'flex' : 'none';
+  } catch(e) {
+    grid.innerHTML = '<div class="hist-empty">&#9888; Could not load history: ' + e.message + '</div>';
+    console.error('hRender:', e);
+  }
+}
+
+// ── Open market handler ────────────────────────────────────────────
+async function hOpenMarket(market) {
+  HPAGE[market] = 1;
+  hRender(market, ST[market].price);
+  await hRetroCheck(market);
+  hRender(market, ST[market].price);
+}
+
+// ── Wire clear + load-more buttons ────────────────────────────────
+(function() {
+  var markets = ['btc','gold','silver'];
+  for(var i=0; i<markets.length; i++) {
+    (function(m) {
+      var cb = document.getElementById(m+'ClearHist');
+      if(cb) cb.addEventListener('click', function() {
+        if(confirm('Delete all signal history for ' + m.toUpperCase() + '?')) {
+          sbDelete(m).then(function() { HPAGE[m]=1; hRender(m); });
+        }
+      });
+      var lb = document.getElementById(m+'HLM');
+      if(lb) lb.addEventListener('click', function() {
+        HPAGE[m]++;
+        hRender(m, ST[m].price);
+      });
+    })(markets[i]);
+  }
+})();
+
 </script>
 </body>
 </html>
