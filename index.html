@@ -1,248 +1,371 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BTC Scalper</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root,[data-theme="light"]{
-      --text-xs:clamp(.75rem,.7rem + .25vw,.875rem);--text-sm:clamp(.875rem,.8rem + .35vw,1rem);
-      --text-base:clamp(1rem,.95rem + .25vw,1.125rem);--text-lg:clamp(1.125rem,1rem + .75vw,1.5rem);
-      --s1:.25rem;--s2:.5rem;--s3:.75rem;--s4:1rem;--s5:1.25rem;--s6:1.5rem;--s8:2rem;
-      --bg:#f5f7fa;--surface:#fff;--surface2:#f7fafc;--surfoff:#eef2f7;--border:#d8e0ea;--div:#e7edf4;
-      --text:#101828;--muted:#667085;--primary:#155eef;--buy:#17b26a;--sell:#f04438;
-      --r-lg:1rem;--r-xl:1.25rem;--r-full:9999px;
-      --shadow:0 12px 30px rgb(16 24 40/.10);--font:'Inter',system-ui,sans-serif;
-    }
-    [data-theme="dark"]{
-      --bg:#0b1020;--surface:#121a2b;--surface2:#172134;--surfoff:#1b2740;--border:#263247;--div:#223047;
-      --text:#f5f7fb;--muted:#a8b3c7;--primary:#6ea8fe;--buy:#3ddc97;--sell:#ff7b72;
-      --shadow:0 18px 44px rgb(0 0 0/.35);
-    }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html{-webkit-text-size-adjust:none;text-size-adjust:none}
-    body{min-height:100dvh;font-family:var(--font);font-size:var(--text-base);color:var(--text);
-      background:radial-gradient(circle at top,rgb(110 168 254/.14),transparent 30%),var(--bg);line-height:1.5}
-    button{font:inherit;cursor:pointer;border:none}
-    .app{width:min(100%,35rem);margin:0 auto;padding:var(--s4)}
-    .screen{min-height:100dvh;display:none;align-items:center}.screen.active{display:flex}
-    .stack{width:100%;display:grid;gap:var(--s4);padding-block:var(--s4) var(--s8)}
-    .card{background:linear-gradient(180deg,rgb(255 255 255/.03),transparent),var(--surface);
-      border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow);padding:var(--s4)}
-    .hero-btn{width:100%;min-height:220px;display:grid;place-items:center;
-      font-size:clamp(2.2rem,12vw,4rem);font-weight:800;letter-spacing:.04em;color:var(--text);
-      background:radial-gradient(circle at top,rgb(110 168 254/.18),transparent 42%),var(--surface);
-      border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow)}
-    .topbar{display:flex;align-items:center;justify-content:space-between;gap:var(--s3)}
-    .icon-btn{min-width:44px;min-height:44px;border-radius:var(--r-full);background:var(--surface);color:var(--text);border:1px solid var(--border)}
-    .lbl{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.05em;font-weight:700;color:var(--muted)}
-    .val{margin-top:var(--s2);font-size:var(--text-lg);font-weight:800}
-    .price-big{font-size:clamp(2rem,8vw,3rem);font-weight:800;line-height:1}
-    .subtle{font-size:var(--text-sm);color:var(--muted)}
-    .row{display:flex;align-items:end;justify-content:space-between;gap:var(--s3)}
-    .pill{display:inline-flex;align-items:center;gap:var(--s2);padding:.45rem .75rem;
-      border-radius:var(--r-full);background:var(--surfoff);font-size:var(--text-xs);color:var(--muted)}
-    /* banner */
-    .banner{padding:var(--s4);border-radius:var(--r-lg);border:1px solid transparent;display:grid;gap:var(--s2)}
-    .banner.buy{background:rgb(61 220 151/.12);border-color:rgb(61 220 151/.24)}
-    .banner.sell{background:rgb(255 123 114/.12);border-color:rgb(255 123 114/.24)}
-    .banner.neutral{background:rgb(110 168 254/.10);border-color:rgb(110 168 254/.24)}
-    .signal-title{font-size:var(--text-lg);font-weight:800}
-    .buy-text{color:var(--buy)}.sell-text{color:var(--sell)}
-    /* prob bars */
-    .prob-wrap{display:grid;gap:var(--s3)}
-    .prob-row{display:grid;gap:var(--s2)}
-    .prob-bar-bg{height:10px;border-radius:var(--r-full);background:var(--surfoff);overflow:hidden}
-    .prob-fill{height:100%;border-radius:var(--r-full);transition:width .7s cubic-bezier(.16,1,.3,1)}
-    .prob-fill.buy{background:var(--buy)}.prob-fill.sell{background:var(--sell)}
-    .prob-meta{display:flex;justify-content:space-between}
-    .prob-num{font-size:var(--text-lg);font-weight:800}
-    /* stats */
-    .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s3)}
-    .stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--s4)}
-    /* level cards */
-    .levels-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s3)}
-    .level-card{border:1px solid var(--border);border-radius:var(--r-xl);padding:var(--s4);overflow:hidden}
-    .level-card.buy{background:linear-gradient(160deg,rgb(61 220 151/.10),transparent),var(--surface)}
-    .level-card.sell{background:linear-gradient(160deg,rgb(255 123 114/.10),transparent),var(--surface)}
-    .kv{display:flex;justify-content:space-between;align-items:center;gap:var(--s2);
-      padding:var(--s2) 0;border-bottom:1px solid var(--div);font-size:var(--text-sm)}
-    .kv:last-child{border-bottom:0;padding-bottom:0}
-    .kv .k{color:var(--muted);white-space:nowrap}
-    .ev{color:var(--primary);font-weight:800}
-    .tv{color:var(--buy);font-weight:700}
-    .slv{color:var(--sell);font-weight:700}
-    .sell-card .tv{color:var(--sell)}.sell-card .slv{color:var(--buy)}
-    /* lock */
-    .lock-row{display:flex;align-items:center;gap:var(--s2);margin-top:var(--s3);flex-wrap:wrap}
-    .lock-badge{display:inline-flex;align-items:center;gap:var(--s2);padding:.3rem .65rem;
-      border-radius:var(--r-full);font-size:var(--text-xs);font-weight:700;
-      background:rgb(110 168 254/.12);color:var(--primary);border:1px solid rgb(110 168 254/.22)}
-    .lock-badge.triggered{background:rgb(61 220 151/.12);color:var(--buy);border-color:rgb(61 220 151/.22)}
-    /* sessions */
-    .session-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s3)}
-    .session-card{background:var(--surface2);border:2px solid var(--border);border-radius:var(--r-lg);
-      padding:var(--s4);display:flex;flex-direction:column;gap:.3rem;transition:border-color .2s,background .2s}
-    .session-card.active{border-color:var(--primary);background:rgb(110 168 254/.09)}
-    .s-name{font-size:var(--text-xs);font-weight:700;letter-spacing:.04em;color:var(--primary);text-transform:uppercase}
-    .s-state{font-size:var(--text-lg);font-weight:900;line-height:1.1}
-    .s-win{font-size:var(--text-sm);color:var(--text)}
-    .s-timer{font-size:var(--text-xs);color:var(--muted)}
-    /* news */
-    .news-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s3)}
-    .news-grid{display:grid;gap:var(--s3)}
-    .news-card{display:grid;gap:var(--s2);padding:var(--s4);
-      background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);
-      text-decoration:none;color:inherit;transition:border-color .18s}
-    .news-card:hover,.news-card:active{border-color:var(--primary)}
-    .news-meta{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap}
-    .news-src{font-size:var(--text-xs);font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.04em}
-    .news-time{font-size:var(--text-xs);color:var(--muted)}
-    .news-title{font-size:var(--text-sm);font-weight:600;line-height:1.5}
-    .sent{display:inline-flex;align-items:center;padding:.2rem .5rem;border-radius:var(--r-full);font-size:var(--text-xs);font-weight:700}
-    .sent.bullish{background:rgb(61 220 151/.14);color:var(--buy)}
-    .sent.bearish{background:rgb(255 123 114/.14);color:var(--sell)}
-    .sent.neutral{background:var(--surfoff);color:var(--muted)}
-    .news-status{padding:var(--s4);text-align:center;color:var(--muted);font-size:var(--text-sm)}
-    /* buttons */
-    .btn-p{width:100%;min-height:52px;border-radius:var(--r-lg);font-weight:700;background:var(--primary);color:#fff}
-    .btn-g{width:100%;min-height:52px;border-radius:var(--r-lg);font-weight:700;background:var(--surfoff);color:var(--text);border:1px solid var(--border)}
-    .btn-sm{min-height:36px;padding:0 var(--s4);border-radius:var(--r-full);font-size:var(--text-xs);font-weight:700;background:var(--surfoff);color:var(--muted);border:1px solid var(--border)}
-    .err{display:none;padding:var(--s4);border-radius:var(--r-lg);background:rgb(255 123 114/.12);border:1px solid rgb(255 123 114/.28)}
-    .err.show{display:block}
-    /* modal */
-    .modal{position:fixed;inset:0;background:rgb(0 0 0/.6);display:none;align-items:center;justify-content:center;padding:var(--s4);z-index:40}
-    .modal.open{display:flex}
-    .sheet{width:min(100%,31rem);background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:var(--s5)}
-    .reasons{display:grid;gap:var(--s3);margin-top:var(--s4)}
-    .rc{background:var(--surfoff);border-radius:var(--r-lg);padding:var(--s3);font-size:var(--text-sm);line-height:1.6}
-    .spinner{width:18px;height:18px;border:2px solid rgb(255 255 255/.25);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:inline-block}
-    .tradingview-widget-container{height:50vh;min-height:420px}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    @media(max-width:440px){.app{padding:var(--s3)}.grid-2,.levels-grid,.session-grid,.news-grid{gap:var(--s2)}.tradingview-widget-container{height:42vh;min-height:360px}}
-    @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Scalper Pro · BTC · Gold · Silver</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --xs:clamp(.75rem,.7rem + .25vw,.875rem);--sm:clamp(.875rem,.8rem + .35vw,1rem);
+  --base:clamp(1rem,.95rem + .25vw,1.125rem);--lg:clamp(1.125rem,1rem + .75vw,1.5rem);
+  --s1:.25rem;--s2:.5rem;--s3:.75rem;--s4:1rem;--s5:1.25rem;--s8:2rem;
+  --bg:#f5f7fa;--sur:#fff;--sur2:#f7fafc;--off:#eef2f7;--bor:#d8e0ea;--div:#e7edf4;
+  --tx:#101828;--mu:#667085;--pr:#155eef;--bu:#17b26a;--se:#f04438;
+  --rl:1rem;--rxl:1.25rem;--rf:9999px;--sh:0 12px 30px rgb(16 24 40/.10);
+  --font:'Inter',system-ui,sans-serif;
+}
+[data-theme="dark"]{
+  --bg:#0b1020;--sur:#121a2b;--sur2:#172134;--off:#1b2740;--bor:#263247;--div:#223047;
+  --tx:#f5f7fb;--mu:#a8b3c7;--pr:#6ea8fe;--bu:#3ddc97;--se:#ff7b72;
+  --sh:0 18px 44px rgb(0 0 0/.35);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:none;text-size-adjust:none}
+body{min-height:100dvh;font-family:var(--font);font-size:var(--base);color:var(--tx);
+  background:radial-gradient(circle at top,rgb(110 168 254/.14),transparent 30%),var(--bg);line-height:1.5}
+button{font:inherit;cursor:pointer;border:none}
+.app{width:min(100%,36rem);margin:0 auto;padding:var(--s4)}
+.screen{min-height:100dvh;display:none;align-items:center}.screen.active{display:flex}
+.stack{width:100%;display:grid;gap:var(--s4);padding-block:var(--s4) var(--s8)}
+.card{background:linear-gradient(180deg,rgb(255 255 255/.03),transparent),var(--sur);
+  border:1px solid var(--bor);border-radius:var(--rxl);box-shadow:var(--sh);padding:var(--s4)}
+.hero-btn{width:100%;min-height:160px;display:grid;place-items:center;
+  font-size:clamp(2rem,10vw,3.5rem);font-weight:800;letter-spacing:.04em;color:var(--tx);
+  background:radial-gradient(circle at top,rgb(110 168 254/.18),transparent 42%),var(--sur);
+  border:1px solid var(--bor);border-radius:var(--rxl);box-shadow:var(--sh)}
+.hero-btn.gold{background:radial-gradient(circle at top,rgb(255 200 50/.22),transparent 42%),var(--sur);color:#d4af37;border-color:rgb(212 175 55/.3)}
+.hero-btn.silver{background:radial-gradient(circle at top,rgb(192 192 192/.18),transparent 42%),var(--sur);color:#a8b3c7;border-color:rgb(168 179 199/.3)}
+.home-grid{display:grid;gap:var(--s4);width:100%}
+.metals-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s4)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:var(--s3)}
+.icon-btn{min-width:44px;min-height:44px;border-radius:var(--rf);background:var(--sur);color:var(--tx);border:1px solid var(--bor)}
+.lbl{font-size:var(--xs);text-transform:uppercase;letter-spacing:.05em;font-weight:700;color:var(--mu)}
+.price-big{font-size:clamp(2rem,8vw,3rem);font-weight:800;line-height:1;margin-top:var(--s2)}
+.subtle{font-size:var(--sm);color:var(--mu)}
+.row{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s3)}
+.pill{display:inline-flex;align-items:center;gap:var(--s2);padding:.45rem .75rem;
+  border-radius:var(--rf);background:var(--off);font-size:var(--xs);color:var(--mu)}
+.banner{padding:var(--s4);border-radius:var(--rl);border:1px solid transparent;display:grid;gap:var(--s2)}
+.banner.buy{background:rgb(61 220 151/.12);border-color:rgb(61 220 151/.24)}
+.banner.sell{background:rgb(255 123 114/.12);border-color:rgb(255 123 114/.24)}
+.banner.neutral{background:rgb(110 168 254/.10);border-color:rgb(110 168 254/.24)}
+.sig{font-size:var(--lg);font-weight:800}
+.buy-tx{color:var(--bu)}.sell-tx{color:var(--se)}
+.prob-wrap{display:grid;gap:var(--s3)}
+.prob-row{display:grid;gap:var(--s2)}
+.prob-bg{height:10px;border-radius:var(--rf);background:var(--off);overflow:hidden}
+.prob-fill{height:100%;border-radius:var(--rf);transition:width .7s cubic-bezier(.16,1,.3,1)}
+.prob-fill.buy{background:var(--bu)}.prob-fill.sell{background:var(--se)}
+.prob-meta{display:flex;justify-content:space-between}
+.prob-num{font-size:var(--lg);font-weight:800}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s3)}
+.stat{background:var(--sur2);border:1px solid var(--bor);border-radius:var(--rl);padding:var(--s4)}
+.val{margin-top:var(--s2);font-size:var(--lg);font-weight:800}
+.lvl-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s3)}
+.lc{border:1px solid var(--bor);border-radius:var(--rxl);padding:var(--s4);overflow:hidden}
+.lc.buy{background:linear-gradient(160deg,rgb(61 220 151/.10),transparent),var(--sur)}
+.lc.sell{background:linear-gradient(160deg,rgb(255 123 114/.10),transparent),var(--sur)}
+.kv{display:flex;justify-content:space-between;align-items:center;gap:var(--s2);
+  padding:var(--s2) 0;border-bottom:1px solid var(--div);font-size:var(--sm)}
+.kv:last-child{border-bottom:0;padding-bottom:0}
+.kv .k{color:var(--mu);white-space:nowrap}
+.ev{color:var(--pr);font-weight:800}.tv{color:var(--bu);font-weight:700}.slv{color:var(--se);font-weight:700}
+.sk .tv{color:var(--se)}.sk .slv{color:var(--bu)}
+.lock-row{display:flex;align-items:center;gap:var(--s2);margin-top:var(--s3);flex-wrap:wrap}
+.lock-b{display:inline-flex;align-items:center;gap:var(--s2);padding:.3rem .65rem;
+  border-radius:var(--rf);font-size:var(--xs);font-weight:700;
+  background:rgb(110 168 254/.12);color:var(--pr);border:1px solid rgb(110 168 254/.22)}
+.lock-b.hit{background:rgb(61 220 151/.12);color:var(--bu);border-color:rgb(61 220 151/.22)}
+.sess-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s3)}
+.sc{background:var(--sur2);border:2px solid var(--bor);border-radius:var(--rl);
+  padding:var(--s4);display:flex;flex-direction:column;gap:.3rem;transition:border-color .2s,background .2s}
+.sc.active{border-color:var(--pr);background:rgb(110 168 254/.09)}
+.s-nm{font-size:var(--xs);font-weight:700;letter-spacing:.04em;color:var(--pr);text-transform:uppercase}
+.s-st{font-size:var(--lg);font-weight:900;line-height:1.1}
+.s-wn{font-size:var(--sm);color:var(--tx)}.s-tm{font-size:var(--xs);color:var(--mu)}
+.news-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s3)}
+.news-grid{display:grid;gap:var(--s3)}
+.nc{display:grid;gap:var(--s2);padding:var(--s4);background:var(--sur2);
+  border:1px solid var(--bor);border-radius:var(--rl);text-decoration:none;color:inherit;transition:border-color .18s}
+.nc:hover,.nc:active{border-color:var(--pr)}
+.nm{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap}
+.ns{font-size:var(--xs);font-weight:700;color:var(--pr);text-transform:uppercase;letter-spacing:.04em}
+.nt{font-size:var(--xs);color:var(--mu)}.nx{font-size:var(--sm);font-weight:600;line-height:1.5}
+.sent{display:inline-flex;align-items:center;padding:.2rem .5rem;border-radius:var(--rf);font-size:var(--xs);font-weight:700}
+.sent.bullish{background:rgb(61 220 151/.14);color:var(--bu)}
+.sent.bearish{background:rgb(255 123 114/.14);color:var(--se)}
+.sent.neutral{background:var(--off);color:var(--mu)}
+.news-st{padding:var(--s4);text-align:center;color:var(--mu);font-size:var(--sm)}
+.badge-gold{display:inline-flex;align-items:center;padding:.25rem .7rem;border-radius:var(--rf);
+  font-size:var(--xs);font-weight:800;background:rgb(212 175 55/.18);color:#d4af37;border:1px solid rgb(212 175 55/.35);margin-bottom:var(--s3)}
+.badge-silver{display:inline-flex;align-items:center;padding:.25rem .7rem;border-radius:var(--rf);
+  font-size:var(--xs);font-weight:800;background:rgb(168 179 199/.18);color:#a8b3c7;border:1px solid rgb(168 179 199/.35);margin-bottom:var(--s3)}
+.btn-p{width:100%;min-height:52px;border-radius:var(--rl);font-weight:700;background:var(--pr);color:#fff}
+.btn-g{width:100%;min-height:52px;border-radius:var(--rl);font-weight:700;background:var(--off);color:var(--tx);border:1px solid var(--bor)}
+.btn-sm{min-height:36px;padding:0 var(--s4);border-radius:var(--rf);font-size:var(--xs);font-weight:700;background:var(--off);color:var(--mu);border:1px solid var(--bor)}
+.err{display:none;padding:var(--s4);border-radius:var(--rl);background:rgb(255 123 114/.12);border:1px solid rgb(255 123 114/.28);font-size:var(--sm)}
+.err.show{display:block}
+.modal{position:fixed;inset:0;background:rgb(0 0 0/.6);display:none;align-items:center;justify-content:center;padding:var(--s4);z-index:40}
+.modal.open{display:flex}
+.sheet{width:min(100%,31rem);background:var(--sur);border:1px solid var(--bor);border-radius:var(--rxl);padding:var(--s5)}
+.reasons{display:grid;gap:var(--s3);margin-top:var(--s4)}
+.rc{background:var(--off);border-radius:var(--rl);padding:var(--s3);font-size:var(--sm);line-height:1.6}
+.spinner{width:18px;height:18px;border:2px solid rgb(255 255 255/.25);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:inline-block}
+.tv-wrap{height:50vh;min-height:400px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:440px){.app{padding:var(--s3)}.g2,.lvl-grid,.sess-grid,.metals-row{gap:var(--s2)}.tv-wrap{height:42vh}}
+</style>
 </head>
 <body>
 <main class="app">
 
-  <!-- HOME -->
-  <section class="screen active" id="homeScreen">
-    <div style="width:100%"><button class="hero-btn" id="openBtc">BTC</button></div>
-  </section>
-
-  <!-- DASHBOARD -->
-  <section class="screen" id="btcScreen">
-    <div class="stack">
-      <div class="topbar">
-        <button class="icon-btn" id="backBtn">←</button>
-        <button class="icon-btn" id="themeToggle">◐</button>
-      </div>
-
-      <!-- price -->
-      <div class="card">
-        <div class="row">
-          <div><div class="lbl">BTC live price</div><div class="price-big" id="priceValue">--</div></div>
-          <div style="text-align:right"><div class="pill" id="updateState">Waiting</div><div class="subtle" id="updatedAt">--</div></div>
-        </div>
-      </div>
-
-      <div class="err" id="errorBox">Live price fetch from Binance failed. Retrying automatically.</div>
-
-      <!-- chart -->
-      <div class="card" style="padding:0;overflow:hidden"><div id="tvChart" class="tradingview-widget-container"></div></div>
-
-      <!-- banner -->
-      <div class="banner neutral" id="signalBanner">
-        <div class="lbl">Probability bias</div>
-        <div class="signal-title" id="biasTitle">Calculating...</div>
-        <div class="subtle" id="confidenceText">Fetching multi-timeframe data.</div>
-      </div>
-
-      <!-- prob bars -->
-      <div class="card prob-wrap">
-        <div class="prob-row">
-          <div class="prob-meta"><span class="lbl">BUY probability</span><span class="prob-num buy-text" id="buyProb">--</span></div>
-          <div class="prob-bar-bg"><div class="prob-fill buy" id="buyBar" style="width:50%"></div></div>
-        </div>
-        <div class="prob-row">
-          <div class="prob-meta"><span class="lbl">SELL probability</span><span class="prob-num sell-text" id="sellProb">--</span></div>
-          <div class="prob-bar-bg"><div class="prob-fill sell" id="sellBar" style="width:50%"></div></div>
-        </div>
-      </div>
-
-      <!-- stats -->
-      <div class="grid-2">
-        <div class="stat-card"><div class="lbl">Confidence</div><div class="val" id="confidenceLevel">--</div></div>
-        <div class="stat-card"><div class="lbl">Signal clarity</div><div class="val" id="signalClarity">--</div></div>
-      </div>
-
-      <!-- levels -->
-      <div>
-        <div class="lbl" style="margin-bottom:var(--s3);padding:0 var(--s1)">BUY &amp; SELL setups · algo best entry</div>
-        <div class="levels-grid">
-          <div class="level-card buy">
-            <div class="lbl" style="margin-bottom:var(--s3)">BUY setup</div>
-            <div class="kv"><span class="k">Next entry ↓</span><span class="ev" id="buyEntry">--</span></div>
-            <div class="kv"><span class="k">Target 1</span><span class="tv" id="buyT1">--</span></div>
-            <div class="kv"><span class="k">Target 2</span><span class="tv" id="buyT2">--</span></div>
-            <div class="kv"><span class="k">Stop Loss 1</span><span class="slv" id="buyS1">--</span></div>
-            <div class="kv"><span class="k">Stop Loss 2</span><span class="slv" id="buyS2">--</span></div>
-          </div>
-          <div class="level-card sell">
-            <div class="lbl" style="margin-bottom:var(--s3)">SELL setup</div>
-            <div class="kv sell-card"><span class="k">Next entry ↑</span><span class="ev" id="sellEntry">--</span></div>
-            <div class="kv sell-card"><span class="k">Target 1</span><span class="tv" id="sellT1">--</span></div>
-            <div class="kv sell-card"><span class="k">Target 2</span><span class="tv" id="sellT2">--</span></div>
-            <div class="kv sell-card"><span class="k">Stop Loss 1</span><span class="slv" id="sellS1">--</span></div>
-            <div class="kv sell-card"><span class="k">Stop Loss 2</span><span class="slv" id="sellS2">--</span></div>
-          </div>
-        </div>
-        <div class="lock-row">
-          <span class="lock-badge" id="lockBadge">🔒 Entry locked</span>
-          <span class="subtle" id="lockNote">Levels update only when price reaches the entry zone.</span>
-        </div>
-      </div>
-
-      <!-- sessions -->
-      <div class="card">
-        <div class="lbl" style="margin-bottom:var(--s3)">Important BTC market sessions · IST</div>
-        <div class="session-grid" id="sessionGrid">
-          <div class="session-card" data-session="us"><div class="s-name">US / New York</div><div class="s-state" id="usSession">--</div><div class="s-win" id="usWindow">--</div><div class="s-timer" id="usTimer">--</div></div>
-          <div class="session-card" data-session="uk"><div class="s-name">UK / London</div><div class="s-state" id="ukSession">--</div><div class="s-win" id="ukWindow">--</div><div class="s-timer" id="ukTimer">--</div></div>
-          <div class="session-card" data-session="eu"><div class="s-name">EU overlap</div><div class="s-state" id="euSession">--</div><div class="s-win" id="euWindow">--</div><div class="s-timer" id="euTimer">--</div></div>
-          <div class="session-card" data-session="japan"><div class="s-name">Japan / Tokyo</div><div class="s-state" id="jpSession">--</div><div class="s-win" id="jpWindow">--</div><div class="s-timer" id="jpTimer">--</div></div>
-          <div class="session-card" data-session="hongkong"><div class="s-name">Hong Kong</div><div class="s-state" id="hkSession">--</div><div class="s-win" id="hkWindow">--</div><div class="s-timer" id="hkTimer">--</div></div>
-          <div class="session-card" data-session="sydney"><div class="s-name">Sydney</div><div class="s-state" id="auSession">--</div><div class="s-win" id="auWindow">--</div><div class="s-timer" id="auTimer">--</div></div>
-        </div>
-      </div>
-
-      <!-- NEWS -->
-      <div>
-        <div class="news-header">
-          <div class="lbl">Crypto &amp; Market news</div>
-          <button class="btn-sm" id="newsRefreshBtn">↻ Refresh</button>
-        </div>
-        <div class="news-grid" id="newsGrid">
-          <div class="news-status" id="newsStatus">Loading news...</div>
-        </div>
-      </div>
-
-      <button class="btn-p" id="whyBtn">Is this recommended?</button>
-      <button class="btn-g" id="retryBtn">Refresh price</button>
+<!-- HOME -->
+<section class="screen active" id="homeScreen">
+  <div class="home-grid">
+    <button class="hero-btn" id="openBtc">&#8383; BTC</button>
+    <div class="metals-row">
+      <button class="hero-btn gold" id="openGold">&#9672; GOLD</button>
+      <button class="hero-btn silver" id="openSilver">&#9671; SILVER</button>
     </div>
-  </section>
+  </div>
+</section>
+
+<!-- BTC DASHBOARD -->
+<section class="screen" id="btcScreen">
+  <div class="stack">
+    <div class="topbar">
+      <button class="icon-btn" id="btcBack">&#8592;</button>
+      <button class="icon-btn" id="btcTheme">&#9680;</button>
+    </div>
+    <div class="card">
+      <div class="row">
+        <div><div class="lbl">BTC live price</div><div class="price-big" id="btcPrice">--</div></div>
+        <div style="text-align:right"><div class="pill" id="btcState">Waiting</div><div class="subtle" id="btcAt">--</div></div>
+      </div>
+    </div>
+    <div class="err" id="btcErr">Price fetch failed. Retrying automatically.</div>
+    <div class="card" style="padding:0;overflow:hidden"><div id="btcChart" class="tv-wrap"></div></div>
+    <div class="banner neutral" id="btcBanner">
+      <div class="lbl">Probability bias</div>
+      <div class="sig" id="btcBiasTitle">Calculating...</div>
+      <div class="subtle" id="btcBiasText">Fetching multi-timeframe data.</div>
+    </div>
+    <div class="card prob-wrap">
+      <div class="prob-row">
+        <div class="prob-meta"><span class="lbl">BUY probability</span><span class="prob-num buy-tx" id="btcBuyP">--</span></div>
+        <div class="prob-bg"><div class="prob-fill buy" id="btcBuyBar" style="width:50%"></div></div>
+      </div>
+      <div class="prob-row">
+        <div class="prob-meta"><span class="lbl">SELL probability</span><span class="prob-num sell-tx" id="btcSellP">--</span></div>
+        <div class="prob-bg"><div class="prob-fill sell" id="btcSellBar" style="width:50%"></div></div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="stat"><div class="lbl">Confidence</div><div class="val" id="btcConf">--</div></div>
+      <div class="stat"><div class="lbl">Signal clarity</div><div class="val" id="btcClarity">--</div></div>
+    </div>
+    <div>
+      <div class="lbl" style="margin-bottom:var(--s3)">BUY &amp; SELL setups</div>
+      <div class="lvl-grid">
+        <div class="lc buy">
+          <div class="lbl" style="margin-bottom:var(--s3)">BUY setup</div>
+          <div class="kv"><span class="k">Entry &#8595;</span><span class="ev" id="btcBE">--</span></div>
+          <div class="kv"><span class="k">Target 1</span><span class="tv" id="btcBT1">--</span></div>
+          <div class="kv"><span class="k">Target 2</span><span class="tv" id="btcBT2">--</span></div>
+          <div class="kv"><span class="k">Stop 1</span><span class="slv" id="btcBS1">--</span></div>
+          <div class="kv"><span class="k">Stop 2</span><span class="slv" id="btcBS2">--</span></div>
+        </div>
+        <div class="lc sell">
+          <div class="lbl" style="margin-bottom:var(--s3)">SELL setup</div>
+          <div class="kv sk"><span class="k">Entry &#8593;</span><span class="ev" id="btcSE">--</span></div>
+          <div class="kv sk"><span class="k">Target 1</span><span class="tv" id="btcST1">--</span></div>
+          <div class="kv sk"><span class="k">Target 2</span><span class="tv" id="btcST2">--</span></div>
+          <div class="kv sk"><span class="k">Stop 1</span><span class="slv" id="btcSS1">--</span></div>
+          <div class="kv sk"><span class="k">Stop 2</span><span class="slv" id="btcSS2">--</span></div>
+        </div>
+      </div>
+      <div class="lock-row">
+        <span class="lock-b" id="btcLock">&#128274; Entry locked</span>
+        <span class="subtle" id="btcLockNote">Wait for price to reach entry zone.</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="lbl" style="margin-bottom:var(--s3)">Market sessions &middot; IST</div>
+      <div class="sess-grid" id="btcSG">
+        <div class="sc" data-s="us"><div class="s-nm">US / New York</div><div class="s-st" id="usS">--</div><div class="s-wn" id="usW">--</div><div class="s-tm" id="usT">--</div></div>
+        <div class="sc" data-s="uk"><div class="s-nm">UK / London</div><div class="s-st" id="ukS">--</div><div class="s-wn" id="ukW">--</div><div class="s-tm" id="ukT">--</div></div>
+        <div class="sc" data-s="eu"><div class="s-nm">EU overlap</div><div class="s-st" id="euS">--</div><div class="s-wn" id="euW">--</div><div class="s-tm" id="euT">--</div></div>
+        <div class="sc" data-s="jp"><div class="s-nm">Japan / Tokyo</div><div class="s-st" id="jpS">--</div><div class="s-wn" id="jpW">--</div><div class="s-tm" id="jpT">--</div></div>
+        <div class="sc" data-s="hk"><div class="s-nm">Hong Kong</div><div class="s-st" id="hkS">--</div><div class="s-wn" id="hkW">--</div><div class="s-tm" id="hkT">--</div></div>
+        <div class="sc" data-s="au"><div class="s-nm">Sydney</div><div class="s-st" id="auS">--</div><div class="s-wn" id="auW">--</div><div class="s-tm" id="auT">--</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="news-hdr"><div class="lbl">Crypto &amp; market news</div><button class="btn-sm" id="btcNR">&#8635; Refresh</button></div>
+      <div class="news-grid" id="btcNews"><div class="news-st">Loading news...</div></div>
+    </div>
+    <button class="btn-p" id="btcWhy">Why this setup?</button>
+    <button class="btn-g" id="btcRetry">&#8635; Refresh price</button>
+  </div>
+</section>
+
+<!-- GOLD DASHBOARD -->
+<section class="screen" id="goldScreen">
+  <div class="stack">
+    <div class="topbar">
+      <button class="icon-btn" id="goldBack">&#8592;</button>
+      <button class="icon-btn" id="goldTheme">&#9680;</button>
+    </div>
+    <div class="card">
+      <div class="badge-gold">&#9672; GOLD &middot; XAU/USD</div>
+      <div class="row">
+        <div><div class="lbl">Gold live price (USD / troy oz)</div><div class="price-big" id="goldPrice">--</div></div>
+        <div style="text-align:right"><div class="pill" id="goldState">Loading...</div><div class="subtle" id="goldAt">--</div></div>
+      </div>
+    </div>
+    <div class="err" id="goldErr"></div>
+    <div class="card" style="padding:0;overflow:hidden"><div id="goldChart" class="tv-wrap"></div></div>
+    <div class="banner neutral" id="goldBanner">
+      <div class="lbl">Probability bias</div>
+      <div class="sig" id="goldBiasTitle">Calculating...</div>
+      <div class="subtle" id="goldBiasText">Fetching multi-timeframe data.</div>
+    </div>
+    <div class="card prob-wrap">
+      <div class="prob-row">
+        <div class="prob-meta"><span class="lbl">BUY probability</span><span class="prob-num buy-tx" id="goldBuyP">--</span></div>
+        <div class="prob-bg"><div class="prob-fill buy" id="goldBuyBar" style="width:50%"></div></div>
+      </div>
+      <div class="prob-row">
+        <div class="prob-meta"><span class="lbl">SELL probability</span><span class="prob-num sell-tx" id="goldSellP">--</span></div>
+        <div class="prob-bg"><div class="prob-fill sell" id="goldSellBar" style="width:50%"></div></div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="stat"><div class="lbl">Confidence</div><div class="val" id="goldConf">--</div></div>
+      <div class="stat"><div class="lbl">Signal clarity</div><div class="val" id="goldClarity">--</div></div>
+    </div>
+    <div>
+      <div class="lbl" style="margin-bottom:var(--s3)">BUY &amp; SELL setups</div>
+      <div class="lvl-grid">
+        <div class="lc buy">
+          <div class="lbl" style="margin-bottom:var(--s3)">BUY setup</div>
+          <div class="kv"><span class="k">Entry &#8595;</span><span class="ev" id="goldBE">--</span></div>
+          <div class="kv"><span class="k">Target 1</span><span class="tv" id="goldBT1">--</span></div>
+          <div class="kv"><span class="k">Target 2</span><span class="tv" id="goldBT2">--</span></div>
+          <div class="kv"><span class="k">Stop 1</span><span class="slv" id="goldBS1">--</span></div>
+          <div class="kv"><span class="k">Stop 2</span><span class="slv" id="goldBS2">--</span></div>
+        </div>
+        <div class="lc sell">
+          <div class="lbl" style="margin-bottom:var(--s3)">SELL setup</div>
+          <div class="kv sk"><span class="k">Entry &#8593;</span><span class="ev" id="goldSE">--</span></div>
+          <div class="kv sk"><span class="k">Target 1</span><span class="tv" id="goldST1">--</span></div>
+          <div class="kv sk"><span class="k">Target 2</span><span class="tv" id="goldST2">--</span></div>
+          <div class="kv sk"><span class="k">Stop 1</span><span class="slv" id="goldSS1">--</span></div>
+          <div class="kv sk"><span class="k">Stop 2</span><span class="slv" id="goldSS2">--</span></div>
+        </div>
+      </div>
+      <div class="lock-row">
+        <span class="lock-b" id="goldLock">&#128274; Entry locked</span>
+        <span class="subtle" id="goldLockNote">Wait for price to reach entry zone.</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="lbl" style="margin-bottom:var(--s3)">&#128293; Key sessions for Gold &middot; IST</div>
+      <div class="sess-grid" id="goldSG">
+        <div class="sc" data-s="uk"><div class="s-nm">&#128293; London Open</div><div class="s-st" id="gukS">--</div><div class="s-wn" id="gukW">--</div><div class="s-tm" id="gukT">--</div></div>
+        <div class="sc" data-s="us"><div class="s-nm">&#128293; NY Open</div><div class="s-st" id="gusS">--</div><div class="s-wn" id="gusW">--</div><div class="s-tm" id="gusT">--</div></div>
+        <div class="sc" data-s="eu"><div class="s-nm">EU overlap</div><div class="s-st" id="geuS">--</div><div class="s-wn" id="geuW">--</div><div class="s-tm" id="geuT">--</div></div>
+        <div class="sc" data-s="jp"><div class="s-nm">Tokyo</div><div class="s-st" id="gjpS">--</div><div class="s-wn" id="gjpW">--</div><div class="s-tm" id="gjpT">--</div></div>
+      </div>
+    </div>
+    <button class="btn-p" id="goldWhy">Why this setup?</button>
+    <button class="btn-g" id="goldRetry">&#8635; Refresh</button>
+  </div>
+</section>
+
+<!-- SILVER DASHBOARD -->
+<section class="screen" id="silverScreen">
+  <div class="stack">
+    <div class="topbar">
+      <button class="icon-btn" id="silverBack">&#8592;</button>
+      <button class="icon-btn" id="silverTheme">&#9680;</button>
+    </div>
+    <div class="card">
+      <div class="badge-silver">&#9671; SILVER &middot; XAG/USD</div>
+      <div class="row">
+        <div><div class="lbl">Silver live price (USD / troy oz)</div><div class="price-big" id="silverPrice">--</div></div>
+        <div style="text-align:right"><div class="pill" id="silverState">Loading...</div><div class="subtle" id="silverAt">--</div></div>
+      </div>
+    </div>
+    <div class="err" id="silverErr"></div>
+    <div class="card" style="padding:0;overflow:hidden"><div id="silverChart" class="tv-wrap"></div></div>
+    <div class="banner neutral" id="silverBanner">
+      <div class="lbl">Probability bias</div>
+      <div class="sig" id="silverBiasTitle">Calculating...</div>
+      <div class="subtle" id="silverBiasText">Fetching multi-timeframe data.</div>
+    </div>
+    <div class="card prob-wrap">
+      <div class="prob-row">
+        <div class="prob-meta"><span class="lbl">BUY probability</span><span class="prob-num buy-tx" id="silverBuyP">--</span></div>
+        <div class="prob-bg"><div class="prob-fill buy" id="silverBuyBar" style="width:50%"></div></div>
+      </div>
+      <div class="prob-row">
+        <div class="prob-meta"><span class="lbl">SELL probability</span><span class="prob-num sell-tx" id="silverSellP">--</span></div>
+        <div class="prob-bg"><div class="prob-fill sell" id="silverSellBar" style="width:50%"></div></div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="stat"><div class="lbl">Confidence</div><div class="val" id="silverConf">--</div></div>
+      <div class="stat"><div class="lbl">Signal clarity</div><div class="val" id="silverClarity">--</div></div>
+    </div>
+    <div>
+      <div class="lbl" style="margin-bottom:var(--s3)">BUY &amp; SELL setups</div>
+      <div class="lvl-grid">
+        <div class="lc buy">
+          <div class="lbl" style="margin-bottom:var(--s3)">BUY setup</div>
+          <div class="kv"><span class="k">Entry &#8595;</span><span class="ev" id="silverBE">--</span></div>
+          <div class="kv"><span class="k">Target 1</span><span class="tv" id="silverBT1">--</span></div>
+          <div class="kv"><span class="k">Target 2</span><span class="tv" id="silverBT2">--</span></div>
+          <div class="kv"><span class="k">Stop 1</span><span class="slv" id="silverBS1">--</span></div>
+          <div class="kv"><span class="k">Stop 2</span><span class="slv" id="silverBS2">--</span></div>
+        </div>
+        <div class="lc sell">
+          <div class="lbl" style="margin-bottom:var(--s3)">SELL setup</div>
+          <div class="kv sk"><span class="k">Entry &#8593;</span><span class="ev" id="silverSE">--</span></div>
+          <div class="kv sk"><span class="k">Target 1</span><span class="tv" id="silverST1">--</span></div>
+          <div class="kv sk"><span class="k">Target 2</span><span class="tv" id="silverST2">--</span></div>
+          <div class="kv sk"><span class="k">Stop 1</span><span class="slv" id="silverSS1">--</span></div>
+          <div class="kv sk"><span class="k">Stop 2</span><span class="slv" id="silverSS2">--</span></div>
+        </div>
+      </div>
+      <div class="lock-row">
+        <span class="lock-b" id="silverLock">&#128274; Entry locked</span>
+        <span class="subtle" id="silverLockNote">Wait for price to reach entry zone.</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="lbl" style="margin-bottom:var(--s3)">&#128293; Key sessions for Silver &middot; IST</div>
+      <div class="sess-grid" id="silverSG">
+        <div class="sc" data-s="uk"><div class="s-nm">&#128293; London Open</div><div class="s-st" id="svukS">--</div><div class="s-wn" id="svukW">--</div><div class="s-tm" id="svukT">--</div></div>
+        <div class="sc" data-s="us"><div class="s-nm">&#128293; NY Open</div><div class="s-st" id="svusS">--</div><div class="s-wn" id="svusW">--</div><div class="s-tm" id="svusT">--</div></div>
+        <div class="sc" data-s="eu"><div class="s-nm">EU overlap</div><div class="s-st" id="sveuS">--</div><div class="s-wn" id="sveuW">--</div><div class="s-tm" id="sveuT">--</div></div>
+        <div class="sc" data-s="jp"><div class="s-nm">Tokyo</div><div class="s-st" id="svjpS">--</div><div class="s-wn" id="svjpW">--</div><div class="s-tm" id="svjpT">--</div></div>
+      </div>
+    </div>
+    <button class="btn-p" id="silverWhy">Why this setup?</button>
+    <button class="btn-g" id="silverRetry">&#8635; Refresh</button>
+  </div>
+</section>
 </main>
 
-<!-- modal -->
-<div class="modal" id="reasonModal" aria-hidden="true">
+<!-- WHY MODAL -->
+<div class="modal" id="whyModal" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true">
     <div class="topbar">
-      <div><div class="lbl">Why this setup</div><h2 style="font-size:var(--text-lg);margin-top:var(--s2)">Reasoning behind the bias</h2></div>
-      <button class="icon-btn" id="closeModal">×</button>
+      <div><div class="lbl">Analysis reasoning</div><h2 style="font-size:var(--lg);margin-top:var(--s2)">Why this setup</h2></div>
+      <button class="icon-btn" id="closeModal">&#215;</button>
     </div>
     <div class="reasons" id="reasonList"></div>
   </div>
@@ -251,353 +374,457 @@
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
 'use strict';
-// ── STATE ─────────────────────────────────────────────────────────────────────
-const S={lastPrice:null,history:[],chartReady:false,isFetching:false,priceTimer:null,sessionTimer:null,kCache:{},lockedBuy:null,lockedSell:null,analysis:null};
 
-// ── DOM ───────────────────────────────────────────────────────────────────────
-const $=id=>document.getElementById(id);
-const el={
-  homeScreen:$('homeScreen'),btcScreen:$('btcScreen'),openBtc:$('openBtc'),
-  backBtn:$('backBtn'),themeToggle:$('themeToggle'),
-  priceValue:$('priceValue'),updateState:$('updateState'),updatedAt:$('updatedAt'),
-  signalBanner:$('signalBanner'),biasTitle:$('biasTitle'),confidenceText:$('confidenceText'),
-  buyProb:$('buyProb'),sellProb:$('sellProb'),buyBar:$('buyBar'),sellBar:$('sellBar'),
-  confidenceLevel:$('confidenceLevel'),signalClarity:$('signalClarity'),
-  buyEntry:$('buyEntry'),buyT1:$('buyT1'),buyT2:$('buyT2'),buyS1:$('buyS1'),buyS2:$('buyS2'),
-  sellEntry:$('sellEntry'),sellT1:$('sellT1'),sellT2:$('sellT2'),sellS1:$('sellS1'),sellS2:$('sellS2'),
-  lockBadge:$('lockBadge'),lockNote:$('lockNote'),errorBox:$('errorBox'),
-  sessionGrid:$('sessionGrid'),
-  usSession:$('usSession'),ukSession:$('ukSession'),euSession:$('euSession'),
-  jpSession:$('jpSession'),hkSession:$('hkSession'),auSession:$('auSession'),
-  usWindow:$('usWindow'),ukWindow:$('ukWindow'),euWindow:$('euWindow'),
-  jpWindow:$('jpWindow'),hkWindow:$('hkWindow'),auWindow:$('auWindow'),
-  usTimer:$('usTimer'),ukTimer:$('ukTimer'),euTimer:$('euTimer'),
-  jpTimer:$('jpTimer'),hkTimer:$('hkTimer'),auTimer:$('auTimer'),
-  newsGrid:$('newsGrid'),newsStatus:$('newsStatus'),newsRefreshBtn:$('newsRefreshBtn'),
-  whyBtn:$('whyBtn'),retryBtn:$('retryBtn'),
-  reasonModal:$('reasonModal'),reasonList:$('reasonList'),closeModal:$('closeModal')
+// ─── HARDCODED API KEY ────────────────────────────────────────────────────────
+const TD_KEY = '275e40dff5c2433c81079c6b212660dc';
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const ST = {
+  btc:    {price:null,fetching:false,timer:null,stimer:null,chartReady:false,kCache:{},lBuy:null,lSell:null,analysis:null},
+  gold:   {price:null,fetching:false,timer:null,stimer:null,chartReady:false,kCache:{},lBuy:null,lSell:null,analysis:null},
+  silver: {price:null,fetching:false,timer:null,stimer:null,chartReady:false,kCache:{},lBuy:null,lSell:null,analysis:null}
 };
 
-// ── UTILS ─────────────────────────────────────────────────────────────────────
-const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
-const fmt=v=>new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(v);
-const nowIST=()=>new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'medium',timeStyle:'short'});
-const utcH=()=>{const n=new Date();return n.getUTCHours()+n.getUTCMinutes()/60;};
-const fmtIST=h=>{const hh=((h%24)+24)%24,b=new Date();return new Date(Date.UTC(b.getUTCFullYear(),b.getUTCMonth(),b.getUTCDate())+hh*3.6e6).toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour:'numeric',minute:'2-digit',hour12:true});};
-const diffTxt=ms=>{const t=Math.max(0,Math.floor(ms/1000));return`${Math.floor(t/3600)}h ${Math.floor((t%3600)/60)}m ${t%60}s`;};
-async function fetchWithTimeout(url,ms=7000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);try{const r=await fetch(url,{signal:c.signal});clearTimeout(id);return r;}catch(e){clearTimeout(id);throw e;}}
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const clamp = (n,a,b) => Math.min(b, Math.max(a, n));
+const fmtN = (v, dp=2) => Number.isFinite(v)
+  ? new Intl.NumberFormat('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp}).format(v) : '--';
+const nowIST = () => new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'medium',timeStyle:'short'});
+const utcH  = () => { const n=new Date(); return n.getUTCHours()+n.getUTCMinutes()/60; };
+const fmtIST = h => {
+  const b=new Date();
+  return new Date(Date.UTC(b.getUTCFullYear(),b.getUTCMonth(),b.getUTCDate())+(((h%24)+24)%24)*3.6e6)
+    .toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour:'numeric',minute:'2-digit',hour12:true});
+};
+const diffTxt = ms => {
+  const t=Math.max(0,Math.floor(ms/1000));
+  return `${Math.floor(t/3600)}h ${Math.floor((t%3600)/60)}m ${t%60}s`;
+};
 
-// ── SESSIONS ──────────────────────────────────────────────────────────────────
-const SCFG={us:{open:13.5,close:20},uk:{open:8,close:16},eu:{open:7,close:15},japan:{open:0,close:6},hongkong:{open:1.5,close:8},sydney:{open:22,close:5}};
-const SW={us:7,uk:5,eu:4,japan:4,hongkong:3,sydney:2};
-const SEL={us:{s:el.usSession,w:el.usWindow,t:el.usTimer},uk:{s:el.ukSession,w:el.ukWindow,t:el.ukTimer},eu:{s:el.euSession,w:el.euWindow,t:el.euTimer},japan:{s:el.jpSession,w:el.jpWindow,t:el.jpTimer},hongkong:{s:el.hkSession,w:el.hkWindow,t:el.hkTimer},sydney:{s:el.auSession,w:el.auWindow,t:el.auTimer}};
-
-function sessInfo(name,h){
-  const{open:o,close:c}=SCFG[name],cross=c<o;
-  let oh=o,ch=c;if(cross){if(h<c)oh=o-24;else ch=c+24;}
-  const isOpen=h>=oh&&h<ch;let state='Closed',w=0;
-  if(isOpen){state='Open';w=1;}else if(h>=oh-1&&h<oh){state='Opening soon';w=.7;}else if(h>=ch&&h<ch+1){state='Just closed';w=-.18;}
-  const now=Date.now(),utcMid=new Date().setUTCHours(0,0,0,0);
-  let nOpen,nClose;
-  if(isOpen){nClose=utcMid+((ch%24+24)%24)*3.6e6;if(nClose<now)nClose+=86400000;nOpen=nClose+86400000;}
-  else{let noh=o;while(noh<=h)noh+=24;nOpen=utcMid+noh*3.6e6;nClose=nOpen+((c-o+24)%24)*3.6e6;}
-  const tl=isOpen?`Open till ${new Date(nClose).toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour:'numeric',minute:'2-digit',hour12:true})} · ${diffTxt(nClose-now)} left`:`Opens at ${new Date(nOpen).toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour:'numeric',minute:'2-digit',hour12:true})} · ${diffTxt(nOpen-now)} away`;
-  return{state,weight:w,window:`${fmtIST(o)} — ${fmtIST(c)}`,timer:tl,isOpen};
-}
-function updateSessions(){
-  const h=utcH(),map={};
-  Object.keys(SCFG).forEach(k=>{const i=sessInfo(k,h);map[k]=i;SEL[k].s.textContent=i.state;SEL[k].w.textContent=i.window;SEL[k].t.textContent=i.timer;});
-  [...el.sessionGrid.children].forEach(c=>c.classList.remove('active'));
-  Object.entries(map).forEach(([k,v])=>{if(v.state==='Open'||v.state==='Opening soon'){const c=el.sessionGrid.querySelector(`[data-session="${k}"]`);if(c)c.classList.add('active');}});
-  const active=Object.entries(map).filter(([,v])=>v.state==='Open').map(([k])=>k.toUpperCase());
-  return{map,active};
+async function fetchWT(url, ms=10000) {
+  const c=new AbortController(), id=setTimeout(()=>c.abort(),ms);
+  try { const r=await fetch(url,{signal:c.signal}); clearTimeout(id); return r; }
+  catch(e) { clearTimeout(id); throw e; }
 }
 
-// ── KLINES ────────────────────────────────────────────────────────────────────
-async function klines(interval,limit=150){
-  const key=`${interval}:${limit}`,now=Date.now();
-  if(S.kCache[key]&&now-S.kCache[key].ts<25000)return S.kCache[key].data;
-  const r=await fetchWithTimeout(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=${limit}`);
-  if(!r.ok)throw new Error('klines');
-  const d=await r.json();S.kCache[key]={ts:now,data:d};return d;
+function setScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+function toggleTheme() {
+  const r=document.documentElement;
+  r.setAttribute('data-theme', r.getAttribute('data-theme')==='dark'?'light':'dark');
+  ['btcChart','goldChart','silverChart'].forEach(id=>{const el=$(id);if(el)el.innerHTML='';});
+  ST.btc.chartReady=ST.gold.chartReady=ST.silver.chartReady=false;
+}
+function mountChart(cid, sym) {
+  if(!window.TradingView) return;
+  new TradingView.widget({autosize:true, symbol:sym, interval:'5', timezone:'Asia/Kolkata',
+    theme: document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light',
+    style:'1', locale:'en', enable_publishing:false, hide_legend:false, save_image:false, container_id:cid});
 }
 
-// ── MATH ─────────────────────────────────────────────────────────────────────
-function ema(arr,p){const k=2/(p+1);let e=arr[0];for(let i=1;i<arr.length;i++)e=arr[i]*k+e*(1-k);return e;}
-function rsi(c,p=14){if(c.length<p+1)return 50;let g=0,l=0;for(let i=c.length-p;i<c.length;i++){const d=c[i]-c[i-1];if(d>=0)g+=d;else l+=Math.abs(d);}if(!l)return 100;return 100-100/(1+(g/p)/(l/p));}
-function atr(kd,p=14){const tr=[];for(let i=1;i<kd.length;i++){const h=+kd[i][2],lo=+kd[i][3],pc=+kd[i-1][4];tr.push(Math.max(h-lo,Math.abs(h-pc),Math.abs(lo-pc)));}return tr.slice(-p).reduce((a,b)=>a+b,0)/p;}
-function volRatio(kd,n=5,base=20){const v=kd.map(k=>+k[5]);return(v.slice(-n).reduce((a,b)=>a+b,0)/n)/(v.slice(-base).reduce((a,b)=>a+b,0)/base)||1;}
+// ─── SESSIONS ─────────────────────────────────────────────────────────────────
+const SCFG = {us:{o:13.5,c:20},uk:{o:8,c:16},eu:{o:7,c:15},jp:{o:0,c:6},hk:{o:1.5,c:8},au:{o:22,c:5}};
+const SW_BTC = {us:7,uk:5,eu:4,jp:4,hk:3,au:2};
+const SW_MET = {us:8,uk:8,eu:5,jp:2};
 
-function swingLevels(kd,price,lookback=80,str=3){
-  const highs=kd.slice(-lookback).map(k=>+k[2]);
-  const lows=kd.slice(-lookback).map(k=>+k[3]);
-  const sH=[],sL=[];
+function sessInfo(k, h) {
+  const {o,c}=SCFG[k], cross=c<o; let oh=o, ch=c;
+  if(cross){if(h<c)oh=o-24; else ch=c+24;}
+  const open=h>=oh&&h<ch; let state='Closed', w=0;
+  if(open){state='Open';w=1;}
+  else if(h>=oh-1&&h<oh){state='Opening soon';w=.7;}
+  else if(h>=ch&&h<ch+1){state='Just closed';w=-.18;}
+  const now=Date.now(), mid=new Date().setUTCHours(0,0,0,0);
+  let nO,nC;
+  if(open){nC=mid+((ch%24+24)%24)*3.6e6;if(nC<now)nC+=86400000;nO=nC+86400000;}
+  else{let no=o;while(no<=h)no+=24;nO=mid+no*3.6e6;nC=nO+((c-o+24)%24)*3.6e6;}
+  const tl=open
+    ?`Open till ${new Date(nC).toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour:'numeric',minute:'2-digit',hour12:true})} · ${diffTxt(nC-now)} left`
+    :`Opens ${new Date(nO).toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour:'numeric',minute:'2-digit',hour12:true})} · ${diffTxt(nO-now)} away`;
+  return {state, w, win:`${fmtIST(o)} — ${fmtIST(c)}`, timer:tl, open};
+}
+
+function renderSess(gridId, elMap, sw) {
+  const h=utcH(); let score=0, active=[];
+  Object.keys(elMap).forEach(k=>{
+    const i=sessInfo(k,h), e=elMap[k];
+    if(e.s)e.s.textContent=i.state;
+    if(e.w)e.w.textContent=i.win;
+    if(e.t)e.t.textContent=i.timer;
+    if(i.open||i.state==='Opening soon') active.push(k.toUpperCase());
+    score+=i.w*(sw[k]||1);
+  });
+  const g=$(gridId); if(!g) return {score:0,active};
+  [...g.children].forEach(c=>c.classList.remove('active'));
+  Object.keys(elMap).forEach(k=>{
+    const i=sessInfo(k,h);
+    if(i.open||i.state==='Opening soon'){const c=g.querySelector(`[data-s="${k}"]`);if(c)c.classList.add('active');}
+  });
+  return {score: score/Object.values(sw).reduce((a,b)=>a+b,0), active};
+}
+
+// ─── MATHS ────────────────────────────────────────────────────────────────────
+function ema(arr, p) {const k=2/(p+1);let e=arr[0];for(let i=1;i<arr.length;i++)e=arr[i]*k+e*(1-k);return e;}
+function rsi(c, p=14) {
+  if(c.length<p+1) return 50;
+  let g=0,l=0;
+  for(let i=c.length-p;i<c.length;i++){const d=c[i]-c[i-1];if(d>=0)g+=d;else l+=Math.abs(d);}
+  if(!l) return 100;
+  return 100-100/(1+(g/p)/(l/p));
+}
+function atr(kd, p=14) {
+  const tr=[];
+  for(let i=1;i<kd.length;i++){
+    const h=+kd[i][2],lo=+kd[i][3],pc=+kd[i-1][4];
+    tr.push(Math.max(h-lo,Math.abs(h-pc),Math.abs(lo-pc)));
+  }
+  return tr.slice(-p).reduce((a,b)=>a+b,0)/p;
+}
+function macd(c) {
+  const f=c.map((_,i)=>ema(c.slice(0,i+1),12));
+  const s=c.map((_,i)=>ema(c.slice(0,i+1),26));
+  const line=f.map((v,i)=>v-s[i]).slice(26);
+  const sig=line.map((_,i)=>ema(line.slice(0,i+1),9));
+  return {hist:(line[line.length-1]||0)-(sig[sig.length-1]||0)};
+}
+function bbands(c, p=20) {
+  const sl=c.slice(-p), mean=sl.reduce((a,b)=>a+b,0)/p;
+  const std=Math.sqrt(sl.reduce((a,v)=>a+(v-mean)**2,0)/p);
+  return {upper:mean+2*std, lower:mean-2*std, mid:mean};
+}
+function volRatio(kd) {
+  const v=kd.map(k=>+k[5]);
+  return (v.slice(-5).reduce((a,b)=>a+b,0)/5)/((v.slice(-20).reduce((a,b)=>a+b,0)/20)||1);
+}
+function swingLevels(kd, price, look=80, str=3) {
+  const highs=kd.slice(-look).map(k=>+k[2]), lows=kd.slice(-look).map(k=>+k[3]);
+  const sH=[], sL=[];
   for(let i=str;i<highs.length-str;i++){
     let iH=true,iL=true;
-    for(let j=1;j<=str;j++){if(highs[i]<=highs[i-j]||highs[i]<=highs[i+j])iH=false;if(lows[i]>=lows[i-j]||lows[i]>=lows[i+j])iL=false;}
-    if(iH)sH.push(highs[i]);if(iL)sL.push(lows[i]);
+    for(let j=1;j<=str;j++){
+      if(highs[i]<=highs[i-j]||highs[i]<=highs[i+j])iH=false;
+      if(lows[i]>=lows[i-j]||lows[i]>=lows[i+j])iL=false;
+    }
+    if(iH)sH.push(highs[i]); if(iL)sL.push(lows[i]);
   }
-  sH.push(Math.max(...highs));sL.push(Math.min(...lows));
-  function cluster(arr){arr.sort((a,b)=>a-b);const out=[];for(const v of arr){if(!out.length||Math.abs(v-out[out.length-1])/out[out.length-1]>0.0015)out.push(v);}return out;}
-  return{res:cluster(sH).filter(v=>v>price).sort((a,b)=>a-b),sup:cluster(sL).filter(v=>v<price).sort((a,b)=>b-a)};
+  sH.push(Math.max(...highs)); sL.push(Math.min(...lows));
+  function cluster(arr){
+    arr.sort((a,b)=>a-b); const out=[];
+    for(const v of arr){if(!out.length||Math.abs(v-out[out.length-1])/out[out.length-1]>0.0015)out.push(v);}
+    return out;
+  }
+  return {
+    res: cluster(sH).filter(v=>v>price).sort((a,b)=>a-b),
+    sup: cluster(sL).filter(v=>v<price).sort((a,b)=>b-a)
+  };
 }
-
-function calcEntries(price,k5,k15,atr5,atr15){
-  // NEXT ENTRY LOGIC:
-  // BUY  → next meaningful SUPPORT below current price (where bulls will likely step in)
-  //        Must be at least 0.15% below price so it's not intimidatingly close
-  // SELL → next meaningful RESISTANCE above current price (where sellers will likely step in)
-  //        Must be at least 0.15% above price
+function calcEntries(price, k5, k15, a5, a15) {
   const c15=k15.map(k=>+k[4]);
-  const ema9=ema(c15.slice(-50),9),ema21=ema(c15.slice(-80),21),ema50=ema(c15.slice(-120),50);
-  const{res:res15,sup:sup15}=swingLevels(k15,price,100,3);
-  const{res:res5,sup:sup5}=swingLevels(k5,price,100,2);
-  const minGap=price*0.0015; // at least 0.15% away from current price
-
-  // BUY: next support = highest swing low that is clearly BELOW price (not touching it)
-  const buyC=[
-    ...sup15.filter(v=>price-v>=minGap&&price-v<atr15*3),
-    ...sup5.filter(v=>price-v>=minGap&&price-v<atr5*4),
-    (ema9<price-minGap)?ema9:null,
-    (ema21<price-minGap)?ema21:null,
-    (ema50<price-minGap)?ema50:null
-  ].filter(Boolean);
-  // Pick the CLOSEST support below price (highest value among candidates)
-  const buyEntry=buyC.length?Math.max(...buyC):price-atr15*0.8;
-
-  // SELL: next resistance = lowest swing high that is clearly ABOVE price
-  const sellC=[
-    ...res15.filter(v=>v-price>=minGap&&v-price<atr15*3),
-    ...res5.filter(v=>v-price>=minGap&&v-price<atr5*4),
-    (ema9>price+minGap)?ema9:null,
-    (ema21>price+minGap)?ema21:null,
-    (ema50>price+minGap)?ema50:null
-  ].filter(Boolean);
-  // Pick the CLOSEST resistance above price (lowest value among candidates)
-  const sellEntry=sellC.length?Math.min(...sellC):price+atr15*0.8;
-
-  return{buyEntry,sellEntry};
+  const e9=ema(c15.slice(-50),9), e21=ema(c15.slice(-80),21), e50=ema(c15.slice(-120),50);
+  const {res:r15,sup:s15}=swingLevels(k15,price,100,3);
+  const {res:r5,sup:s5}=swingLevels(k5,price,100,2);
+  const gap=price*0.0015;
+  const bC=[...s15.filter(v=>price-v>=gap&&price-v<a15*3),...s5.filter(v=>price-v>=gap&&price-v<a5*4),(e9<price-gap)?e9:null,(e21<price-gap)?e21:null,(e50<price-gap)?e50:null].filter(Boolean);
+  const sC=[...r15.filter(v=>v-price>=gap&&v-price<a15*3),...r5.filter(v=>v-price>=gap&&v-price<a5*4),(e9>price+gap)?e9:null,(e21>price+gap)?e21:null,(e50>price+gap)?e50:null].filter(Boolean);
+  return {
+    buyEntry:  bC.length ? Math.max(...bC) : price-a15*0.8,
+    sellEntry: sC.length ? Math.min(...sC) : price+a15*0.8
+  };
 }
-
-function levelsFromSR(entry,side,res,sup,blendedATR){
+function levelsFromSR(entry, side, res, sup, bATR) {
   if(side==='buy'){
-    const above=res.filter(v=>v>entry).sort((a,b)=>a-b);
-    const below=sup.filter(v=>v<entry).sort((a,b)=>b-a);
-    return{entry,t1:above[0]||entry+blendedATR*1.0,t2:above[1]||entry+blendedATR*1.8,s1:below[0]||entry-blendedATR*0.7,s2:below[1]||entry-blendedATR*1.3};
-  }else{
-    const below=sup.filter(v=>v<entry).sort((a,b)=>b-a);
-    const above=res.filter(v=>v>entry).sort((a,b)=>a-b);
-    return{entry,t1:below[0]||entry-blendedATR*1.0,t2:below[1]||entry-blendedATR*1.8,s1:above[0]||entry+blendedATR*0.7,s2:above[1]||entry+blendedATR*1.3};
+    const ab=res.filter(v=>v>entry).sort((a,b)=>a-b);
+    const be=sup.filter(v=>v<entry).sort((a,b)=>b-a);
+    return {entry, t1:ab[0]||entry+bATR, t2:ab[1]||entry+bATR*1.8, s1:be[0]||entry-bATR*0.7, s2:be[1]||entry-bATR*1.3};
+  } else {
+    const be=sup.filter(v=>v<entry).sort((a,b)=>b-a);
+    const ab=res.filter(v=>v>entry).sort((a,b)=>a-b);
+    return {entry, t1:be[0]||entry-bATR, t2:be[1]||entry-bATR*1.8, s1:ab[0]||entry+bATR*0.7, s2:ab[1]||entry+bATR*1.3};
   }
 }
-
-function tfScore(kd){
-  const c=kd.map(k=>+k[4]);
-  const e20=ema(c.slice(-80),20),e50=ema(c.slice(-80),50);
-  const r14=rsi(c.slice(-50),14),r7=rsi(c.slice(-20),7);
-  const last=c[c.length-1];
-  return{trendBias:(e20-e50)/last*100,rsiSig:(r14-50)/50*.5+(r7-50)/50*.5,volBoost:volRatio(kd)>1.15?.08:volRatio(kd)<.8?-.05:0,r14,r7};
+function tfScore(kd) {
+  const c=kd.map(k=>+k[4]), last=c[c.length-1];
+  const e20=ema(c.slice(-80),20), e50=ema(c.slice(-80),50);
+  const r14=rsi(c.slice(-50),14), r7=rsi(c.slice(-20),7);
+  const vr=volRatio(kd);
+  return {trendBias:(e20-e50)/last*100, rsiSig:(r14-50)/50*.5+(r7-50)/50*.5, volBoost:vr>1.15?.08:vr<.8?-.05:0, r14, r7};
 }
-
-function shouldRefreshBuy(price,newEntry){
-  if(!S.lockedBuy)return true;
-  const zoneHit=price<=S.lockedBuy.entry*1.001;      // price dropped to buy zone
-  const structureBroken=price<S.lockedBuy.s2;        // price smashed through SL2
-  const bigStructureShift=Math.abs(newEntry-S.lockedBuy.entry)/S.lockedBuy.entry>0.008; // >0.8% shift in S/R
-  return zoneHit||structureBroken||bigStructureShift;
-}
-function shouldRefreshSell(price,newEntry){
-  if(!S.lockedSell)return true;
-  const zoneHit=price>=S.lockedSell.entry*0.999;     // price rallied to sell zone
-  const structureBroken=price>S.lockedSell.s2;       // price blew through SL2
-  const bigStructureShift=Math.abs(newEntry-S.lockedSell.entry)/S.lockedSell.entry>0.008;
-  return zoneHit||structureBroken||bigStructureShift;
-}
-
-// ── MAIN ANALYSIS ─────────────────────────────────────────────────────────────
-async function analyze(price){
-  const sess=updateSessions();
-  const[k5,k15,k1h]=await Promise.all([klines('5m',150),klines('15m',150),klines('1h',120)]);
-  const tf5=tfScore(k5),tf15=tfScore(k15),tf1h=tfScore(k1h);
-  const atr5=atr(k5,14),atr15=atr(k15,14),atr1h=atr(k1h,14);
-  const blendedATR=atr5*.2+atr15*.45+atr1h*.35;
-  const sr15=swingLevels(k15,price,100,3),sr1h=swingLevels(k1h,price,80,3);
+async function runAnalysis(price, k5, k15, k1h, sessScore, active, market, extraInd) {
+  const tf5=tfScore(k5), tf15=tfScore(k15), tf1h=tfScore(k1h);
+  const a5=atr(k5,14), a15=atr(k15,14), a1h=atr(k1h,14);
+  const bATR=a5*.2+a15*.45+a1h*.35;
+  const sr15=swingLevels(k15,price,100,3), sr1h=swingLevels(k1h,price,80,3);
   const allRes=[...sr15.res,...sr1h.res].sort((a,b)=>a-b);
   const allSup=[...sr15.sup,...sr1h.sup].sort((a,b)=>b-a);
   const trendScore=tf5.trendBias*.22+tf15.trendBias*.40+tf1h.trendBias*.38;
-  const rsiScore=tf5.rsiSig*.18+tf15.rsiSig*.40+tf1h.rsiSig*.42;
-  const volScore=(tf5.volBoost+tf15.volBoost)*.5;
-  const sessScore=Object.entries(sess.map).reduce((a,[k,v])=>a+v.weight*SW[k],0)/26;
-  const volPct=(atr5/price)*100;
-  const volAdj=volPct>.35?-.04:volPct<.05?-.02:.03;
-  const rawBias=trendScore*.55+rsiScore*30+sessScore*3+volScore*2+volAdj*10;
+  const rsiScore  =tf5.rsiSig*.18  +tf15.rsiSig*.40  +tf1h.rsiSig*.42;
+  const volScore  =(tf5.volBoost+tf15.volBoost)*.5;
+  let extra=0;
+  if(extraInd){
+    const c15=k15.map(k=>+k[4]), c1h=k1h.map(k=>+k[4]);
+    const mc=macd(c15), bb=bbands(c15,20), last=c15[c15.length-1];
+    const e200=ema(c1h.slice(-200),200);
+    extra=(mc.hist>0?.04:-.04)+(last<bb.lower?.05:last>bb.upper?-.05:0)+(price>e200?.03:-.03);
+  }
+  const rawBias=trendScore*.55+rsiScore*30+sessScore*3+volScore*2+extra*20;
   const normBias=Math.tanh(rawBias/18);
-  let buy=Math.round(clamp(50+normBias*44,8,92));
-  let sell=100-buy;
+  let buy=Math.round(clamp(50+normBias*44,8,92)), sell=100-buy;
   const aligned=[tf5.trendBias,tf15.trendBias,tf1h.trendBias];
-  const allBull=aligned.every(x=>x>0),allBear=aligned.every(x=>x<0);
-  const rsiExtreme=Math.abs(tf15.r14-50)>20||Math.abs(tf1h.r14-50)>20;
+  const allBull=aligned.every(x=>x>0), allBear=aligned.every(x=>x<0);
+  const rsiX=Math.abs(tf15.r14-50)>20||Math.abs(tf1h.r14-50)>20;
   const diff=Math.abs(buy-sell);
-  const confidence=Math.round(clamp(50+diff*.55+(allBull||allBear?12:0)+(rsiExtreme?8:0)+Math.abs(sessScore)*8,48,95));
+  const conf=Math.round(clamp(50+diff*.55+(allBull||allBear?12:0)+(rsiX?8:0)+Math.abs(sessScore)*8,48,95));
   const clarity=diff>=28?'Very clear':diff>=16?'Clear':diff>=8?'Moderate':'Balanced';
   const dominant=buy>=sell?'BUY':'SELL';
-  const{buyEntry,sellEntry}=calcEntries(price,k5,k15,atr5,atr15);
-  if(shouldRefreshBuy(price,buyEntry))S.lockedBuy=levelsFromSR(buyEntry,'buy',allRes,allSup,blendedATR);
-  if(shouldRefreshSell(price,sellEntry))S.lockedSell=levelsFromSR(sellEntry,'sell',allRes,allSup,blendedATR);
-  const sessionLine=sess.active.length?sess.active.join(' + ')+' session active':'Low session overlap';
+  const {buyEntry,sellEntry}=calcEntries(price,k5,k15,a5,a15);
+  const st=ST[market];
+  if(!st.lBuy||Math.abs(buyEntry-st.lBuy.entry)/st.lBuy.entry>0.008)
+    st.lBuy=levelsFromSR(buyEntry,'buy',allRes,allSup,bATR);
+  if(!st.lSell||Math.abs(sellEntry-st.lSell.entry)/st.lSell.entry>0.008)
+    st.lSell=levelsFromSR(sellEntry,'sell',allRes,allSup,bATR);
+  const sessLine=active.length?active.join(' + ')+' active':'Low session overlap';
   const reasons=[
-    `Multi-TF trend: 5m ${tf5.trendBias>0?'▲':'▼'} · 15m ${tf15.trendBias>0?'▲':'▼'} · 1h ${tf1h.trendBias>0?'▲':'▼'} — ${allBull?'all three aligned bullish':allBear?'all three aligned bearish':'timeframes are mixed'}.`,
-    `RSI (15m): ${tf15.r14.toFixed(0)} · RSI (1h): ${tf1h.r14.toFixed(0)} — ${tf15.r14<40?'oversold zone, longs favoured':tf15.r14>60?'overbought zone, shorts favoured':'neutral range on 15m'}.`,
-    `Next BUY entry is the closest swing support BELOW current price — wait for price to pull back there. Next SELL entry is the closest swing resistance ABOVE price — wait for price to push up there.`,
-    `Targets and stops are pulled from real swing highs/lows — not fixed ATR percentages.`,
-    `${sessionLine}. Blended ATR = ${Math.round(blendedATR)} — fallback only when no S/R level found.`
+    `Multi-TF trend: 5m ${tf5.trendBias>0?'▲':'▼'} · 15m ${tf15.trendBias>0?'▲':'▼'} · 1h ${tf1h.trendBias>0?'▲':'▼'} — ${allBull?'all aligned bullish':allBear?'all aligned bearish':'mixed timeframes'}.`,
+    `RSI 15m: ${tf15.r14.toFixed(0)} · RSI 1h: ${tf1h.r14.toFixed(0)} — ${tf15.r14<40?'oversold, longs favoured':tf15.r14>60?'overbought, shorts favoured':'neutral range'}.`,
+    extraInd?`MACD, Bollinger Bands and EMA-200 filter applied (metals-specific indicators).`:`Swing S/R entry — wait for pullback to the entry zone.`,
+    `Targets and stops derived from real swing highs/lows, not fixed ATR multiples.`,
+    `${sessLine}. Blended ATR = ${Math.round(bATR)}.`
   ];
-  return{buy,sell,confidence,clarity,dominant,buyLevels:S.lockedBuy,sellLevels:S.lockedSell,reasons,sessionLine};
+  return {buy, sell, conf, clarity, dominant, buyLevels:st.lBuy, sellLevels:st.lSell, reasons, sessLine};
+}
+function renderResult(ids, r, dp=2) {
+  $(ids.bP).textContent=`${r.buy}%`;   $(ids.sP).textContent=`${r.sell}%`;
+  $(ids.bBar).style.width=`${r.buy}%`; $(ids.sBar).style.width=`${r.sell}%`;
+  $(ids.conf).textContent=`${r.conf}%`; $(ids.clarity).textContent=r.clarity;
+  $(ids.bT).textContent=`${r.dominant} side has higher probability`;
+  $(ids.bTx).textContent=`${r.sessLine}. Confidence ${r.conf}%.`;
+  $(ids.banner).className=`banner ${r.dominant==='BUY'?'buy':'sell'}`;
+  const B=r.buyLevels, V=r.sellLevels;
+  if(B){$(ids.BE).textContent=fmtN(B.entry,dp);$(ids.BT1).textContent=fmtN(B.t1,dp);$(ids.BT2).textContent=fmtN(B.t2,dp);$(ids.BS1).textContent=fmtN(B.s1,dp);$(ids.BS2).textContent=fmtN(B.s2,dp);}
+  if(V){$(ids.SE).textContent=fmtN(V.entry,dp);$(ids.ST1).textContent=fmtN(V.t1,dp);$(ids.ST2).textContent=fmtN(V.t2,dp);$(ids.SS1).textContent=fmtN(V.s1,dp);$(ids.SS2).textContent=fmtN(V.s2,dp);}
+  $(ids.lock).textContent='🔒 Entry locked'; $(ids.lock).className='lock-b';
+  $(ids.lockNote).textContent='Wait for price to reach entry zone.';
 }
 
-// ── RENDER ────────────────────────────────────────────────────────────────────
-function render(r){
-  S.analysis=r;
-  el.buyProb.textContent=`${r.buy}%`;el.sellProb.textContent=`${r.sell}%`;
-  el.buyBar.style.width=`${r.buy}%`;el.sellBar.style.width=`${r.sell}%`;
-  el.confidenceLevel.textContent=`${r.confidence}%`;el.signalClarity.textContent=r.clarity;
-  el.biasTitle.textContent=`${r.dominant} side has higher probability`;
-  el.confidenceText.textContent=`${r.sessionLine}. Confidence ${r.confidence}%.`;
-  el.signalBanner.className=`banner ${r.dominant==='BUY'?'buy':'sell'}`;
-  const B=r.buyLevels,V=r.sellLevels;
-  if(B){el.buyEntry.textContent=fmt(B.entry);el.buyT1.textContent=fmt(B.t1);el.buyT2.textContent=fmt(B.t2);el.buyS1.textContent=fmt(B.s1);el.buyS2.textContent=fmt(B.s2);}
-  if(V){el.sellEntry.textContent=fmt(V.entry);el.sellT1.textContent=fmt(V.t1);el.sellT2.textContent=fmt(V.t2);el.sellS1.textContent=fmt(V.s1);el.sellS2.textContent=fmt(V.s2);}
-  const buyHit=S.lastPrice&&S.lockedBuy&&S.lastPrice<=S.lockedBuy.entry*1.001;
-  const sellHit=S.lastPrice&&S.lockedSell&&S.lastPrice>=S.lockedSell.entry*0.999;
-  if(buyHit||sellHit){el.lockBadge.textContent='⚡ Entry zone reached';el.lockBadge.className='lock-badge triggered';el.lockNote.textContent='Price has reached the entry zone — monitor closely!';}
-  else{el.lockBadge.textContent='🔒 Entry locked';el.lockBadge.className='lock-badge';el.lockNote.textContent='Wait for price to reach this level before entering.';}
+// ─── BTC ──────────────────────────────────────────────────────────────────────
+async function btcKlines(interval, limit=150) {
+  const st=ST.btc, key=interval, now=Date.now();
+  if(st.kCache[key]&&now-st.kCache[key].ts<25000) return st.kCache[key].data;
+  const r=await fetchWT(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=${limit}`);
+  if(!r.ok) throw new Error('binance klines');
+  const d=await r.json(); st.kCache[key]={ts:now,data:d}; return d;
 }
-function renderReasons(){el.reasonList.innerHTML=(S.analysis?.reasons||['Loading...']).map(t=>`<div class="rc">${t}</div>`).join('');}
+const BTC_IDS={bP:'btcBuyP',sP:'btcSellP',bBar:'btcBuyBar',sBar:'btcSellBar',conf:'btcConf',clarity:'btcClarity',bT:'btcBiasTitle',bTx:'btcBiasText',banner:'btcBanner',BE:'btcBE',BT1:'btcBT1',BT2:'btcBT2',BS1:'btcBS1',BS2:'btcBS2',SE:'btcSE',ST1:'btcST1',ST2:'btcST2',SS1:'btcSS1',SS2:'btcSS2',lock:'btcLock',lockNote:'btcLockNote'};
+const BTC_SE_EL={us:{s:$('usS'),w:$('usW'),t:$('usT')},uk:{s:$('ukS'),w:$('ukW'),t:$('ukT')},eu:{s:$('euS'),w:$('euW'),t:$('euT')},jp:{s:$('jpS'),w:$('jpW'),t:$('jpT')},hk:{s:$('hkS'),w:$('hkW'),t:$('hkT')},au:{s:$('auS'),w:$('auW'),t:$('auT')}};
 
-// ── NEWS ─────────────────────────────────────────────────────────────────────
-// Uses rss2json.com (free, CORS open, no key needed) to parse RSS from top crypto sources.
-// rss2json converts any public RSS XML into clean JSON directly in the browser.
-const RSS_FEEDS=[
+async function updateBTC(manual=false) {
+  const st=ST.btc; if(st.fetching)return; st.fetching=true;
+  $('btcState').innerHTML='<span class="spinner"></span>';
+  try {
+    const r=await fetchWT('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
+    if(!r.ok) throw new Error();
+    const price=Number((await r.json()).price);
+    if(!Number.isFinite(price)||price<=0) throw new Error();
+    st.price=price;
+    $('btcPrice').textContent=fmtN(price); $('btcAt').textContent=`Updated ${nowIST()}`;
+    $('btcState').textContent=manual?'Refreshed ✓':'Binance live ✓';
+    $('btcErr').classList.remove('show');
+    const {score,active}=renderSess('btcSG',BTC_SE_EL,SW_BTC);
+    const [k5,k15,k1h]=await Promise.all([btcKlines('5m',150),btcKlines('15m',150),btcKlines('1h',120)]);
+    const res=await runAnalysis(price,k5,k15,k1h,score,active,'btc',false);
+    st.analysis=res; renderResult(BTC_IDS,res,2);
+  } catch(e) {
+    $('btcState').textContent='Fetch failed'; $('btcErr').classList.add('show');
+  } finally { st.fetching=false; }
+}
+
+// ─── SPOT PRICE (fawazahmed0 CDN — no key, CORS open, always free) ────────────
+async function metalsSpotPrice(metal) {
+  const sym=metal==='gold'?'xau':'xag';
+  // Primary mirror
+  try {
+    const r=await fetchWT(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${sym}.json`,8000);
+    if(r.ok){
+      const j=await r.json();
+      // j[sym]['usd'] = how many USD per 1 troy oz
+      const p=j[sym]['usd'];
+      if(Number.isFinite(p)&&p>1) return p; // gold >$1, silver >$1 always
+    }
+  } catch(_) {}
+  // Fallback mirror (dated snapshot on same CDN)
+  try {
+    const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
+    const r=await fetchWT(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${yesterday}/v1/currencies/${sym}.json`,8000);
+    if(r.ok){
+      const j=await r.json();
+      const p=j[sym]['usd'];
+      if(Number.isFinite(p)&&p>1) return p;
+    }
+  } catch(_) {}
+  throw new Error(`${metal} spot price unavailable`);
+}
+
+// ─── KLINES via TwelveData ───────────────────────────────────────────────────
+// Gold: XAU/USD via TwelveData (free plan supports it)
+// Silver: Gold klines scaled by Au/Ag ratio — ~0.92 correlation, valid for TA
+async function metalsKlines(metal, interval, outputsize=90) {
+  const st=ST[metal], key=interval, now=Date.now();
+  if(st.kCache[key]&&now-st.kCache[key].ts<30000) return st.kCache[key].data;
+
+  // Always fetch Gold klines from TwelveData (works on free plan)
+  const url=`https://api.twelvedata.com/time_series?symbol=XAU%2FUSD&interval=${interval}&outputsize=${outputsize}&apikey=${TD_KEY}&format=JSON`;
+  const r=await fetchWT(url,12000);
+  if(!r.ok) throw new Error('TwelveData network error');
+  const j=await r.json();
+  if(j.status==='error') throw new Error(j.message||'TwelveData error');
+  const values=j.values||[];
+  if(!values.length) throw new Error('empty klines');
+
+  // Parse gold klines (newest-first → reverse)
+  const goldData=values.reverse().map(v=>[
+    new Date(v.datetime).getTime(),
+    parseFloat(v.open), parseFloat(v.high), parseFloat(v.low), parseFloat(v.close),
+    parseFloat(v.volume||0)
+  ]);
+
+  if(metal==='gold'){
+    st.kCache[key]={ts:now,data:goldData}; return goldData;
+  }
+
+  // Silver: scale Gold candles by current Au/Ag spot ratio
+  // This preserves all relative price movements and structure for TA
+  const goldSpot=ST.gold.price||goldData[goldData.length-1][4];
+  const silverSpot=ST.silver.price||1;
+  const ratio=silverSpot/goldSpot; // ~0.009–0.012 typically
+  const silverData=goldData.map(c=>[
+    c[0],
+    +(c[1]*ratio).toFixed(4), +(c[2]*ratio).toFixed(4),
+    +(c[3]*ratio).toFixed(4), +(c[4]*ratio).toFixed(4),
+    c[5]
+  ]);
+  st.kCache[key]={ts:now,data:silverData}; return silverData;
+}
+
+// ─── METALS UPDATE ────────────────────────────────────────────────────────────
+const M_SE_G={uk:{s:$('gukS'),w:$('gukW'),t:$('gukT')},us:{s:$('gusS'),w:$('gusW'),t:$('gusT')},eu:{s:$('geuS'),w:$('geuW'),t:$('geuT')},jp:{s:$('gjpS'),w:$('gjpW'),t:$('gjpT')}};
+const M_SE_S={uk:{s:$('svukS'),w:$('svukW'),t:$('svukT')},us:{s:$('svusS'),w:$('svusW'),t:$('svusT')},eu:{s:$('sveuS'),w:$('sveuW'),t:$('sveuT')},jp:{s:$('svjpS'),w:$('svjpW'),t:$('svjpT')}};
+
+function mIDs(m){
+  return{bP:`${m}BuyP`,sP:`${m}SellP`,bBar:`${m}BuyBar`,sBar:`${m}SellBar`,conf:`${m}Conf`,clarity:`${m}Clarity`,bT:`${m}BiasTitle`,bTx:`${m}BiasText`,banner:`${m}Banner`,BE:`${m}BE`,BT1:`${m}BT1`,BT2:`${m}BT2`,BS1:`${m}BS1`,BS2:`${m}BS2`,SE:`${m}SE`,ST1:`${m}ST1`,ST2:`${m}ST2`,SS1:`${m}SS1`,SS2:`${m}SS2`,lock:`${m}Lock`,lockNote:`${m}LockNote`};
+}
+
+async function updateMetal(metal) {
+  const st=ST[metal], p=metal, dp=metal==='gold'?2:3;
+  const sEls=metal==='gold'?M_SE_G:M_SE_S, sgId=`${metal}SG`;
+  const tvSym=metal==='gold'?'OANDA:XAUUSD':'OANDA:XAGUSD';
+  if(st.fetching) return; st.fetching=true;
+  $(`${p}State`).innerHTML='<span class="spinner"></span>';
+  try {
+    // STEP 1 — spot price (no key needed)
+    const price=await metalsSpotPrice(metal);
+    st.price=price;
+    $(`${p}Price`).textContent=fmtN(price,dp);
+    $(`${p}At`).textContent=`Updated ${nowIST()}`;
+    $(`${p}Err`).classList.remove('show');
+
+    // STEP 2 — TradingView chart
+    if(!st.chartReady&&window.TradingView){mountChart(`${p}Chart`,tvSym);st.chartReady=true;}
+
+    // STEP 3 — sessions
+    const {score,active}=renderSess(sgId,sEls,SW_MET);
+
+    // STEP 4 — klines + algo via TwelveData
+    $(`${p}State`).textContent='Fetching algo...';
+    const [k5,k15,k1h]=await Promise.all([
+      metalsKlines(metal,'5min',90),
+      metalsKlines(metal,'15min',90),
+      metalsKlines(metal,'1h',80)
+    ]);
+    const res=await runAnalysis(price,k5,k15,k1h,score,active,metal,true);
+    st.analysis=res; renderResult(mIDs(metal),res,dp);
+    $(`${p}State`).textContent='Live ✓';
+  } catch(e) {
+    $(`${p}State`).textContent='Error';
+    $(`${p}Err`).classList.add('show');
+    $(`${p}Err`).textContent=`Error: ${e.message}`;
+    console.error(metal, e);
+  } finally { st.fetching=false; }
+}
+
+// ─── NEWS ─────────────────────────────────────────────────────────────────────
+const RSS=[
   {url:'https://cointelegraph.com/rss',label:'Cointelegraph'},
   {url:'https://decrypt.co/feed',label:'Decrypt'},
   {url:'https://news.bitcoin.com/feed/',label:'Bitcoin.com'},
   {url:'https://www.newsbtc.com/feed/',label:'NewsBTC'},
-  {url:'https://cryptopotato.com/feed/',label:'CryptoPotato'},
-  {url:'https://coinjournal.net/feed/',label:'CoinJournal'}
+  {url:'https://cryptopotato.com/feed/',label:'CryptoPotato'}
 ];
-const RSS2JSON='https://api.rss2json.com/v1/api.json?rss_url=';
-
-function timeAgo(d){
-  if(!d)return'';
-  const m=(Date.now()-new Date(d).getTime())/60000;
-  if(isNaN(m)||m<0)return'';
-  if(m<1)return'just now';if(m<60)return`${Math.round(m)}m ago`;
-  if(m<1440)return`${Math.round(m/60)}h ago`;return`${Math.round(m/1440)}d ago`;
-}
-function sentiment(t){
-  const s=(t||'').toLowerCase();
-  const b=['surge','rally','bull','rise','gain','record','high','break','soar','pump','ath','green','boost','etf','inflow','adoption','approve','jump'].filter(w=>s.includes(w)).length;
-  const r=['crash','drop','fall','bear','dump','fear','sell','red','plunge','decline','panic','ban','hack','loss','lawsuit','seized','reject','warning'].filter(w=>s.includes(w)).length;
-  return b>r?'bullish':r>b?'bearish':'neutral';
-}
-function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-async function fetchFeed(feed){
-  const r=await fetchWithTimeout(RSS2JSON+encodeURIComponent(feed.url),8000);
-  if(!r.ok)throw new Error('rss2json fail');
-  const j=await r.json();
-  if(j.status!=='ok'&&j.status!=='success')throw new Error('bad rss');
-  return(j.items||[]).slice(0,4).map(i=>({
-    title:i.title||'',
-    url:i.link||'#',
-    source:feed.label,
-    date:i.pubDate||''
-  }));
-}
-
+const R2J='https://api.rss2json.com/v1/api.json?rss_url=';
+function ago(d){if(!d)return'';const m=(Date.now()-new Date(d).getTime())/60000;if(isNaN(m)||m<0)return'';if(m<1)return'just now';if(m<60)return`${Math.round(m)}m ago`;if(m<1440)return`${Math.round(m/60)}h ago`;return`${Math.round(m/1440)}d ago`;}
+function sentim(t){const s=(t||'').toLowerCase();const b=['surge','rally','bull','rise','gain','record','break','soar','pump','ath','green','etf','inflow','adoption'].filter(w=>s.includes(w)).length;const r=['crash','drop','fall','bear','dump','fear','plunge','decline','panic','ban','hack','loss','lawsuit','reject'].filter(w=>s.includes(w)).length;return b>r?'bullish':r>b?'bearish':'neutral';}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 async function fetchNews(){
-  el.newsGrid.innerHTML='<div class="news-status">Loading latest crypto news...</div>';
-  const allArticles=[];
-  // fire all feed requests in parallel, collect whatever succeeds
-  const results=await Promise.allSettled(RSS_FEEDS.map(f=>fetchFeed(f)));
-  results.forEach(r=>{if(r.status==='fulfilled')allArticles.push(...r.value);});
-  if(!allArticles.length){
-    el.newsGrid.innerHTML=`<div class="news-status">Could not load news. <button class="btn-sm" onclick="fetchNews()" style="margin-top:.5rem">↻ Try again</button></div>`;
-    return;
-  }
-  // sort newest first
-  allArticles.sort((a,b)=>new Date(b.date)-new Date(a.date));
-  el.newsGrid.innerHTML=allArticles.slice(0,10).map(a=>{
-    const s=sentiment(a.title),ag=timeAgo(a.date);
-    return`<a class="news-card" href="${escHtml(a.url)}" target="_blank" rel="noopener noreferrer">
-      <div class="news-meta">
-        <span class="news-src">${escHtml(a.source)}</span>
-        ${ag?`<span class="news-time">${ag}</span>`:''}
-        <span class="sent ${s}">${s==='bullish'?'▲ Bullish':s==='bearish'?'▼ Bearish':'— Neutral'}</span>
-      </div>
-      <div class="news-title">${escHtml(a.title)}</div>
-    </a>`;
-  }).join('');
+  $('btcNews').innerHTML='<div class="news-st">Loading...</div>';
+  const all=[];
+  await Promise.allSettled(RSS.map(async f=>{
+    try{const r=await fetchWT(R2J+encodeURIComponent(f.url),8000);if(!r.ok)return;const j=await r.json();if(j.status!=='ok'&&j.status!=='success')return;(j.items||[]).slice(0,4).forEach(i=>all.push({title:i.title||'',url:i.link||'#',source:f.label,date:i.pubDate||''}));}catch(_){}
+  }));
+  if(!all.length){$('btcNews').innerHTML=`<div class="news-st">Could not load. <button class="btn-sm" onclick="fetchNews()">↻ Retry</button></div>`;return;}
+  all.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  $('btcNews').innerHTML=all.slice(0,10).map(a=>{const s=sentim(a.title),ag=ago(a.date);return`<a class="nc" href="${esc(a.url)}" target="_blank" rel="noopener noreferrer"><div class="nm"><span class="ns">${esc(a.source)}</span>${ag?`<span class="nt">${ag}</span>`:''}<span class="sent ${s}">${s==='bullish'?'▲ Bullish':s==='bearish'?'▼ Bearish':'— Neutral'}</span></div><div class="nx">${esc(a.title)}</div></a>`;}).join('');
 }
 
-// ── PRICE FETCH ───────────────────────────────────────────────────────────────
-async function fetchPrice(){
-  const r=await fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
-  if(!r.ok)throw new Error('price');
-  const n=Number((await r.json()).price);
-  if(!Number.isFinite(n)||n<=0)throw new Error('bad');
-  return n;
-}
-async function updatePrice(manual=false){
-  if(S.isFetching)return;S.isFetching=true;
-  el.updateState.innerHTML='<span class="spinner"></span>';
-  try{
-    const price=await fetchPrice();
-    S.lastPrice=price;S.history.push({time:Date.now(),price});S.history=S.history.slice(-60);
-    el.priceValue.textContent=fmt(price);
-    el.updatedAt.textContent=`Updated ${nowIST()}`;
-    el.updateState.textContent=manual?'Refreshed ✓':'Binance live ✓';
-    el.errorBox.classList.remove('show');
-    render(await analyze(price));
-  }catch(e){
-    el.updateState.textContent='Fetch failed';el.errorBox.classList.add('show');
-    if(S.lastPrice){try{render(await analyze(S.lastPrice));}catch(_){}}
-    else{el.biasTitle.textContent='Unavailable';el.confidenceText.textContent='Waiting for Binance.';}
-  }finally{S.isFetching=false;}
-}
-
-// ── CHART ─────────────────────────────────────────────────────────────────────
-function mountChart(){
-  if(S.chartReady||!window.TradingView)return;
-  new TradingView.widget({autosize:true,symbol:'BINANCE:BTCUSDT',interval:'5',timezone:'Asia/Kolkata',
-    theme:document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light',
-    style:'1',locale:'en',enable_publishing:false,hide_legend:false,save_image:false,container_id:'tvChart'});
-  S.chartReady=true;
-}
-
-// ── SCREEN / THEME ────────────────────────────────────────────────────────────
-function setScreen(s){[el.homeScreen,el.btcScreen].forEach(x=>x.classList.remove('active'));s.classList.add('active');}
-function toggleTheme(){
-  const r=document.documentElement;
-  r.setAttribute('data-theme',r.getAttribute('data-theme')==='dark'?'light':'dark');
-  if(S.chartReady){$('tvChart').innerHTML='';S.chartReady=false;mountChart();}
-}
-
-// ── EVENTS ────────────────────────────────────────────────────────────────────
-el.openBtc.addEventListener('click',async()=>{
-  setScreen(el.btcScreen);mountChart();updateSessions();
-  await updatePrice(false);fetchNews();
-  S.priceTimer=setInterval(()=>updatePrice(false),30000);
-  S.sessionTimer=setInterval(()=>updateSessions(),1000);
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+$('openBtc').addEventListener('click', async()=>{
+  setScreen('btcScreen');
+  if(!ST.btc.chartReady&&window.TradingView){mountChart('btcChart','BINANCE:BTCUSDT');ST.btc.chartReady=true;}
+  renderSess('btcSG',BTC_SE_EL,SW_BTC);
+  fetchNews();
+  await updateBTC(false);
+  clearInterval(ST.btc.timer); clearInterval(ST.btc.stimer);
+  ST.btc.timer=setInterval(()=>updateBTC(false),30000);
+  ST.btc.stimer=setInterval(()=>renderSess('btcSG',BTC_SE_EL,SW_BTC),1000);
 });
-el.backBtn.addEventListener('click',()=>setScreen(el.homeScreen));
-el.themeToggle.addEventListener('click',toggleTheme);
-el.retryBtn.addEventListener('click',()=>updatePrice(true));
-el.newsRefreshBtn.addEventListener('click',fetchNews);
-el.whyBtn.addEventListener('click',()=>{renderReasons();el.reasonModal.classList.add('open');el.reasonModal.setAttribute('aria-hidden','false');});
-el.closeModal.addEventListener('click',()=>{el.reasonModal.classList.remove('open');el.reasonModal.setAttribute('aria-hidden','true');});
-el.reasonModal.addEventListener('click',e=>{if(e.target===el.reasonModal){el.reasonModal.classList.remove('open');el.reasonModal.setAttribute('aria-hidden','true');}});
-updateSessions();
+
+$('openGold').addEventListener('click', async()=>{
+  setScreen('goldScreen');
+  renderSess('goldSG',M_SE_G,SW_MET);
+  await updateMetal('gold');
+  clearInterval(ST.gold.timer); clearInterval(ST.gold.stimer);
+  ST.gold.timer=setInterval(()=>updateMetal('gold'),60000);
+  ST.gold.stimer=setInterval(()=>renderSess('goldSG',M_SE_G,SW_MET),1000);
+});
+
+$('openSilver').addEventListener('click', async()=>{
+  setScreen('silverScreen');
+  renderSess('silverSG',M_SE_S,SW_MET);
+  await updateMetal('silver');
+  clearInterval(ST.silver.timer); clearInterval(ST.silver.stimer);
+  ST.silver.timer=setInterval(()=>updateMetal('silver'),60000);
+  ST.silver.stimer=setInterval(()=>renderSess('silverSG',M_SE_S,SW_MET),1000);
+});
+
+$('btcBack').addEventListener('click',    ()=>{setScreen('homeScreen');clearInterval(ST.btc.timer);clearInterval(ST.btc.stimer);});
+$('goldBack').addEventListener('click',   ()=>{setScreen('homeScreen');clearInterval(ST.gold.timer);clearInterval(ST.gold.stimer);});
+$('silverBack').addEventListener('click', ()=>{setScreen('homeScreen');clearInterval(ST.silver.timer);clearInterval(ST.silver.stimer);});
+
+['btcTheme','goldTheme','silverTheme'].forEach(id=>$(id).addEventListener('click',toggleTheme));
+$('btcRetry').addEventListener('click',    ()=>updateBTC(true));
+$('goldRetry').addEventListener('click',   ()=>updateMetal('gold'));
+$('silverRetry').addEventListener('click', ()=>updateMetal('silver'));
+$('btcNR').addEventListener('click', fetchNews);
+
+$('btcWhy').addEventListener('click',()=>{if(ST.btc.analysis){$('reasonList').innerHTML=ST.btc.analysis.reasons.map(t=>`<div class="rc">${t}</div>`).join('');$('whyModal').classList.add('open');}});
+$('goldWhy').addEventListener('click',()=>{if(ST.gold.analysis){$('reasonList').innerHTML=ST.gold.analysis.reasons.map(t=>`<div class="rc">${t}</div>`).join('');$('whyModal').classList.add('open');}});
+$('silverWhy').addEventListener('click',()=>{if(ST.silver.analysis){$('reasonList').innerHTML=ST.silver.analysis.reasons.map(t=>`<div class="rc">${t}</div>`).join('');$('whyModal').classList.add('open');}});
+$('closeModal').addEventListener('click',()=>$('whyModal').classList.remove('open'));
+$('whyModal').addEventListener('click',e=>{if(e.target===$('whyModal'))$('whyModal').classList.remove('open');});
+
+// Init BTC session clocks on page load
+renderSess('btcSG',BTC_SE_EL,SW_BTC);
 </script>
 </body>
 </html>
