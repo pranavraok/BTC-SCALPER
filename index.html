@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Scalper Pro · BTC · Gold · Silver</title>
+<title>ScalperPro v25 · BTC · Gold · Silver</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -73,6 +73,14 @@ button{font:inherit;cursor:pointer;border:none}
 .kv .k{color:var(--mu);white-space:nowrap}
 .ev{color:var(--pr);font-weight:800}.tv{color:var(--bu);font-weight:700}.slv{color:var(--se);font-weight:700}
 .sk .tv{color:var(--se)}.sk .slv{color:var(--bu)}
+
+/* ── Live levels badge ── */
+.levels-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s3)}
+.live-pulse{display:inline-flex;align-items:center;gap:.35rem;padding:.2rem .6rem;border-radius:var(--rf);
+  background:rgb(61 220 151/.10);border:1px solid rgb(61 220 151/.25);font-size:9px;font-weight:800;
+  color:var(--bu);text-transform:uppercase;letter-spacing:.06em}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--bu);animation:opulse 1.4s infinite}
+
 .lock-row{display:flex;align-items:center;gap:var(--s2);margin-top:var(--s3);flex-wrap:wrap}
 .lock-b{display:inline-flex;align-items:center;gap:var(--s2);padding:.3rem .65rem;
   border-radius:var(--rf);font-size:var(--xs);font-weight:700;
@@ -117,6 +125,7 @@ button{font:inherit;cursor:pointer;border:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:440px){.app{padding:var(--s3)}.g2,.lvl-grid,.sess-grid,.metals-row{gap:var(--s2)}.tv-wrap{height:42vh}}
 
+/* ── History / Recommendation ── */
 .hist-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s3)}
 .hist-empty{padding:var(--s5);text-align:center;color:var(--mu);font-size:var(--sm);background:var(--sur2);border-radius:var(--rl);border:1px dashed var(--bor)}
 .hist-grid{display:grid;gap:var(--s3)}.hist-more{display:flex;justify-content:center;margin-top:var(--s3)}
@@ -136,6 +145,8 @@ button{font:inherit;cursor:pointer;border:none}
 .slv-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--mu);font-weight:700}
 .slv-val{font-size:var(--sm);font-weight:800}
 .slv-entry .slv-val{color:var(--pr)}.slv-t .slv-val{color:var(--bu)}.slv-s .slv-val{color:var(--se)}
+
+/* ── Open position card ── */
 .open-pos{background:var(--sur2);border:2px solid var(--bu);border-radius:var(--rxl);padding:var(--s4);display:grid;gap:var(--s3);position:relative;overflow:hidden}
 .open-pos.sell-open{border-color:var(--se)}
 .open-pos::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px}
@@ -148,8 +159,21 @@ button{font:inherit;cursor:pointer;border:none}
 .sell-open .op-badge{color:var(--se)}
 .op-dir{font-size:var(--lg);font-weight:900;line-height:1}
 .op-time{font-size:var(--xs);color:var(--mu);margin-top:.15rem}.op-hidden{display:none}
-@keyframes opulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
 
+/* ── Timer bar ── */
+.validity-bar-wrap{margin-top:var(--s2)}
+.vb-meta{display:flex;justify-content:space-between;font-size:10px;color:var(--mu);margin-bottom:4px}
+.vb-bg{height:5px;border-radius:var(--rf);background:var(--off);overflow:hidden}
+.vb-fill{height:100%;border-radius:var(--rf);background:var(--pr);transition:width 1s linear}
+.vb-fill.warning{background:#f59e0b}.vb-fill.danger{background:var(--se)}
+
+/* ── Recommendation section divider ── */
+.rec-section{border:1px solid var(--bor);border-radius:var(--rxl);overflow:hidden}
+.rec-section-hdr{padding:var(--s3) var(--s4);background:var(--sur2);border-bottom:1px solid var(--bor);
+  display:flex;align-items:center;justify-content:space-between}
+.rec-section-body{padding:var(--s4)}
+
+@keyframes opulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
 </style>
 </head>
 <body>
@@ -176,7 +200,11 @@ button{font:inherit;cursor:pointer;border:none}
     <div class="card">
       <div class="row">
         <div><div class="lbl">BTC live price</div><div class="price-big" id="btcPrice">--</div></div>
-        <div style="text-align:right"><div class="pill" id="btcState">Waiting</div><div class="subtle" id="btcAt">--</div></div>
+        <div style="text-align:right">
+          <button class="btn-sm" id="btcPriceRefresh">Refresh</button>
+          <div class="pill" id="btcState" style="margin-top:var(--s2)">Waiting</div>
+          <div class="subtle" id="btcAt">--</div>
+        </div>
       </div>
     </div>
     <div class="err" id="btcErr">Price fetch failed. Retrying automatically.</div>
@@ -200,8 +228,13 @@ button{font:inherit;cursor:pointer;border:none}
       <div class="stat"><div class="lbl">Confidence</div><div class="val" id="btcConf">--</div></div>
       <div class="stat"><div class="lbl">Signal clarity</div><div class="val" id="btcClarity">--</div></div>
     </div>
+
+    <!-- LIVE BUY/SELL SETUPS — always updates -->
     <div>
-      <div class="lbl" style="margin-bottom:var(--s3)">BUY &amp; SELL setups</div>
+      <div class="levels-hdr">
+        <div class="lbl">BUY &amp; SELL setups</div>
+        <span class="live-pulse"><span class="live-dot"></span>Live · updates every refresh</span>
+      </div>
       <div class="lvl-grid">
         <div class="lc buy">
           <div class="lbl" style="margin-bottom:var(--s3)">BUY setup</div>
@@ -221,10 +254,11 @@ button{font:inherit;cursor:pointer;border:none}
         </div>
       </div>
       <div class="lock-row">
-        <span class="lock-b" id="btcLock">&#128274; Entry locked</span>
-        <span class="subtle" id="btcLockNote">Wait for price to reach entry zone.</span>
+        <span class="lock-b" id="btcLock">&#9203; Waiting for entry</span>
+        <span class="subtle" id="btcLockNote">Price not at entry yet.</span>
       </div>
     </div>
+
     <div class="card">
       <div class="lbl" style="margin-bottom:var(--s3)">Market sessions &middot; IST</div>
       <div class="sess-grid" id="btcSG">
@@ -239,6 +273,12 @@ button{font:inherit;cursor:pointer;border:none}
     <div>
       <div class="news-hdr"><div class="lbl">Crypto &amp; market news</div><button class="btn-sm" id="btcNR">&#8635; Refresh</button></div>
       <div class="news-grid" id="btcNews"><div class="news-st">Loading news...</div></div>
+    </div>
+
+    <!-- TRADE RECOMMENDATION SECTION -->
+    <div id="btcRecStatus" style="margin-bottom:var(--s3);padding:.5rem .9rem;border-radius:var(--rf);font-size:var(--xs);font-weight:800;background:var(--off);border:1px solid var(--bor);display:inline-flex;align-items:center;gap:.4rem">
+      <span id="btcRecDot" style="width:7px;height:7px;border-radius:50%;background:var(--mu)"></span>
+      <span id="btcRecTxt" style="color:var(--mu)">Algo watching for setup...</span>
     </div>
     <div id="btcOpenPos" class="op-hidden">
       <div class="open-pos" id="btcOpenCard">
@@ -265,7 +305,7 @@ button{font:inherit;cursor:pointer;border:none}
     </div>
     <div>
       <div class="hist-hdr">
-        <div class="lbl">&#128337; History &middot; BTC</div>
+        <div class="lbl">&#127919; Trade Recommendation &middot; BTC <span style="font-size:9px;opacity:.4;font-weight:500">v25</span></div>
         <button class="btn-sm" id="btcClearHist">Clear</button>
       </div>
       <div class="hist-grid" id="btcHistGrid"><div class="hist-empty">No signals yet.</div></div>
@@ -287,7 +327,11 @@ button{font:inherit;cursor:pointer;border:none}
       <div class="badge-gold">&#9672; GOLD &middot; XAU/USD</div>
       <div class="row">
         <div><div class="lbl">Gold live price (USD / troy oz)</div><div class="price-big" id="goldPrice">--</div></div>
-        <div style="text-align:right"><div class="pill" id="goldState">Loading...</div><div class="subtle" id="goldAt">--</div></div>
+        <div style="text-align:right">
+          <button class="btn-sm" id="goldPriceRefresh">Refresh</button>
+          <div class="pill" id="goldState" style="margin-top:var(--s2)">Loading...</div>
+          <div class="subtle" id="goldAt">--</div>
+        </div>
       </div>
     </div>
     <div class="err" id="goldErr"></div>
@@ -312,7 +356,10 @@ button{font:inherit;cursor:pointer;border:none}
       <div class="stat"><div class="lbl">Signal clarity</div><div class="val" id="goldClarity">--</div></div>
     </div>
     <div>
-      <div class="lbl" style="margin-bottom:var(--s3)">BUY &amp; SELL setups</div>
+      <div class="levels-hdr">
+        <div class="lbl">BUY &amp; SELL setups</div>
+        <span class="live-pulse"><span class="live-dot"></span>Live · updates every refresh</span>
+      </div>
       <div class="lvl-grid">
         <div class="lc buy">
           <div class="lbl" style="margin-bottom:var(--s3)">BUY setup</div>
@@ -332,8 +379,8 @@ button{font:inherit;cursor:pointer;border:none}
         </div>
       </div>
       <div class="lock-row">
-        <span class="lock-b" id="goldLock">&#128274; Entry locked</span>
-        <span class="subtle" id="goldLockNote">Wait for price to reach entry zone.</span>
+        <span class="lock-b" id="goldLock">&#9203; Waiting for entry</span>
+        <span class="subtle" id="goldLockNote">Price not at entry yet.</span>
       </div>
     </div>
     <div class="card">
@@ -344,6 +391,10 @@ button{font:inherit;cursor:pointer;border:none}
         <div class="sc" data-s="eu"><div class="s-nm">EU overlap</div><div class="s-st" id="geuS">--</div><div class="s-wn" id="geuW">--</div><div class="s-tm" id="geuT">--</div></div>
         <div class="sc" data-s="jp"><div class="s-nm">Tokyo</div><div class="s-st" id="gjpS">--</div><div class="s-wn" id="gjpW">--</div><div class="s-tm" id="gjpT">--</div></div>
       </div>
+    </div>
+    <div id="goldRecStatus" style="margin-bottom:var(--s3);padding:.5rem .9rem;border-radius:var(--rf);font-size:var(--xs);font-weight:800;background:var(--off);border:1px solid var(--bor);display:inline-flex;align-items:center;gap:.4rem">
+      <span id="goldRecDot" style="width:7px;height:7px;border-radius:50%;background:var(--mu)"></span>
+      <span id="goldRecTxt" style="color:var(--mu)">Algo watching for setup...</span>
     </div>
     <div id="goldOpenPos" class="op-hidden">
       <div class="open-pos" id="goldOpenCard">
@@ -370,7 +421,7 @@ button{font:inherit;cursor:pointer;border:none}
     </div>
     <div>
       <div class="hist-hdr">
-        <div class="lbl">&#128337; History &middot; Gold</div>
+        <div class="lbl">&#127919; Trade Recommendation &middot; Gold</div>
         <button class="btn-sm" id="goldClearHist">Clear</button>
       </div>
       <div class="hist-grid" id="goldHistGrid"><div class="hist-empty">No signals yet.</div></div>
@@ -392,7 +443,11 @@ button{font:inherit;cursor:pointer;border:none}
       <div class="badge-silver">&#9671; SILVER &middot; XAG/USD</div>
       <div class="row">
         <div><div class="lbl">Silver live price (USD / troy oz)</div><div class="price-big" id="silverPrice">--</div></div>
-        <div style="text-align:right"><div class="pill" id="silverState">Loading...</div><div class="subtle" id="silverAt">--</div></div>
+        <div style="text-align:right">
+          <button class="btn-sm" id="silverPriceRefresh">Refresh</button>
+          <div class="pill" id="silverState" style="margin-top:var(--s2)">Loading...</div>
+          <div class="subtle" id="silverAt">--</div>
+        </div>
       </div>
     </div>
     <div class="err" id="silverErr"></div>
@@ -417,7 +472,10 @@ button{font:inherit;cursor:pointer;border:none}
       <div class="stat"><div class="lbl">Signal clarity</div><div class="val" id="silverClarity">--</div></div>
     </div>
     <div>
-      <div class="lbl" style="margin-bottom:var(--s3)">BUY &amp; SELL setups</div>
+      <div class="levels-hdr">
+        <div class="lbl">BUY &amp; SELL setups</div>
+        <span class="live-pulse"><span class="live-dot"></span>Live · updates every refresh</span>
+      </div>
       <div class="lvl-grid">
         <div class="lc buy">
           <div class="lbl" style="margin-bottom:var(--s3)">BUY setup</div>
@@ -437,8 +495,8 @@ button{font:inherit;cursor:pointer;border:none}
         </div>
       </div>
       <div class="lock-row">
-        <span class="lock-b" id="silverLock">&#128274; Entry locked</span>
-        <span class="subtle" id="silverLockNote">Wait for price to reach entry zone.</span>
+        <span class="lock-b" id="silverLock">&#9203; Waiting for entry</span>
+        <span class="subtle" id="silverLockNote">Price not at entry yet.</span>
       </div>
     </div>
     <div class="card">
@@ -449,6 +507,10 @@ button{font:inherit;cursor:pointer;border:none}
         <div class="sc" data-s="eu"><div class="s-nm">EU overlap</div><div class="s-st" id="sveuS">--</div><div class="s-wn" id="sveuW">--</div><div class="s-tm" id="sveuT">--</div></div>
         <div class="sc" data-s="jp"><div class="s-nm">Tokyo</div><div class="s-st" id="svjpS">--</div><div class="s-wn" id="svjpW">--</div><div class="s-tm" id="svjpT">--</div></div>
       </div>
+    </div>
+    <div id="silverRecStatus" style="margin-bottom:var(--s3);padding:.5rem .9rem;border-radius:var(--rf);font-size:var(--xs);font-weight:800;background:var(--off);border:1px solid var(--bor);display:inline-flex;align-items:center;gap:.4rem">
+      <span id="silverRecDot" style="width:7px;height:7px;border-radius:50%;background:var(--mu)"></span>
+      <span id="silverRecTxt" style="color:var(--mu)">Algo watching for setup...</span>
     </div>
     <div id="silverOpenPos" class="op-hidden">
       <div class="open-pos" id="silverOpenCard">
@@ -475,7 +537,7 @@ button{font:inherit;cursor:pointer;border:none}
     </div>
     <div>
       <div class="hist-hdr">
-        <div class="lbl">&#128337; History &middot; Silver</div>
+        <div class="lbl">&#127919; Trade Recommendation &middot; Silver</div>
         <button class="btn-sm" id="silverClearHist">Clear</button>
       </div>
       <div class="hist-grid" id="silverHistGrid"><div class="hist-empty">No signals yet.</div></div>
@@ -502,23 +564,45 @@ button{font:inherit;cursor:pointer;border:none}
 <script>
 'use strict';
 
-// ─── HARDCODED API KEY ────────────────────────────────────────────────────────
-const TD_KEY = '275e40dff5c2433c81079c6b212660dc';
+// ─── CONFIG ───────────────────────────────────────────────────────
+const TD_KEY       = '275e40dff5c2433c81079c6b212660dc';
+const ALGO_VERSION = 'v25';
 
-// ─── STATE ────────────────────────────────────────────────────────────────────
+// ── Recommendation lifecycle constants ──
+const REC_VALID_MS    = 3 * 60 * 60 * 1000;  // 3h: watch expires if never entered
+const PENDING_MAX_MS  = 6 * 60 * 60 * 1000;  // 6h: absolute cap on live trade
+const DATA_STALE_MS   = 10 * 60 * 1000;       // 10min: consider data stale
+const SL_COOLDOWN_MS  = 30 * 60 * 1000;       // 30min: cooldown after stop-loss
+const ENTRY_PCT       = 0.0015;               // 0.15% proximity window for lock badge
+
+// ── Algorithm quality gates ──
+const MIN_CONF        = 65;   // confidence >= 65
+const MIN_DOM_PROB    = 60;   // dominant side probability >= 60
+const VALID_CLARITY   = ['very clear', 'clear'];  // must be clear or better
+
+// ── Supabase ──
+const SB_URL = 'https://tbzgvmcmlkxaexdnkesp.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRiemd2bWNtbGt4YWV4ZG5rZXNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDgwOTUsImV4cCI6MjA5MzEyNDA5NX0.NbZtv_HjVgAi7_WCIt_ysDTlEzpWys815SEuYt7MUwY';
+
+// ─── RUNTIME STATE ─────────────────────────────────────────────────
+// Each market keeps:
+//   price, lastPriceAt — live price tracking
+//   analysis           — latest algo result (always fresh from each refresh)
+//   activeRec          — currently locked recommendation (null = none)
+//   fetching, timer, stimer, chartReady, kCache
 const ST = {
-  btc:    {price:null,fetching:false,timer:null,stimer:null,chartReady:false,kCache:{},lBuy:null,lSell:null,analysis:null},
-  gold:   {price:null,fetching:false,timer:null,stimer:null,chartReady:false,kCache:{},lBuy:null,lSell:null,analysis:null},
-  silver: {price:null,fetching:false,timer:null,stimer:null,chartReady:false,kCache:{},lBuy:null,lSell:null,analysis:null}
+  btc:    {price:null,lastPriceAt:null,fetching:false,timer:null,stimer:null,chartReady:false,kCache:{},analysis:null,activeRec:null,lastResolvedAt:null},
+  gold:   {price:null,lastPriceAt:null,fetching:false,timer:null,stimer:null,chartReady:false,kCache:{},analysis:null,activeRec:null,lastResolvedAt:null},
+  silver: {price:null,lastPriceAt:null,fetching:false,timer:null,stimer:null,chartReady:false,kCache:{},analysis:null,activeRec:null,lastResolvedAt:null}
 };
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────────
+// ─── HELPERS ─────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
-const clamp = (n,a,b) => Math.min(b, Math.max(a, n));
-const fmtN = (v, dp=2) => Number.isFinite(v)
+const clamp = (n,a,b) => Math.min(b,Math.max(a,n));
+const fmtN  = (v,dp=2) => Number.isFinite(v)
   ? new Intl.NumberFormat('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp}).format(v) : '--';
 const nowIST = () => new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'medium',timeStyle:'short'});
-const utcH  = () => { const n=new Date(); return n.getUTCHours()+n.getUTCMinutes()/60; };
+const utcH   = () => { const n=new Date(); return n.getUTCHours()+n.getUTCMinutes()/60; };
 const fmtIST = h => {
   const b=new Date();
   return new Date(Date.UTC(b.getUTCFullYear(),b.getUTCMonth(),b.getUTCDate())+(((h%24)+24)%24)*3.6e6)
@@ -528,81 +612,104 @@ const diffTxt = ms => {
   const t=Math.max(0,Math.floor(ms/1000));
   return `${Math.floor(t/3600)}h ${Math.floor((t%3600)/60)}m ${t%60}s`;
 };
-
-async function fetchWT(url, ms=10000) {
-  const c=new AbortController(), id=setTimeout(()=>c.abort(),ms);
-  try { const r=await fetch(url,{signal:c.signal}); clearTimeout(id); return r; }
-  catch(e) { clearTimeout(id); throw e; }
+function timeAgo(tsMs){
+  if(!tsMs) return '';
+  const diff=Date.now()-tsMs, m=Math.floor(diff/60000);
+  if(m<1)  return 'just now';
+  if(m<60) return m+'m ago';
+  const h=Math.floor(m/60);
+  if(h<24) return h+'h '+(m%60?m%60+'m ':'')+'ago';
+  return Math.floor(h/24)+'d ago';
+}
+function istFull(){
+  return new Date().toLocaleString('en-IN',{
+    timeZone:'Asia/Kolkata',day:'2-digit',month:'short',
+    year:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
+}
+function fmtP(v,dp){
+  return Number.isFinite(+v)
+    ? '$'+new Intl.NumberFormat('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp}).format(+v)
+    : '--';
 }
 
-function setScreen(id) {
+async function fetchWT(url,ms=10000){
+  const c=new AbortController(),id=setTimeout(()=>c.abort(),ms);
+  try{const r=await fetch(url,{signal:c.signal});clearTimeout(id);return r;}
+  catch(e){clearTimeout(id);throw e;}
+}
+function setScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $(id).classList.add('active');
 }
-function toggleTheme() {
+function toggleTheme(){
   const r=document.documentElement;
-  r.setAttribute('data-theme', r.getAttribute('data-theme')==='dark'?'light':'dark');
+  r.setAttribute('data-theme',r.getAttribute('data-theme')==='dark'?'light':'dark');
   ['btcChart','goldChart','silverChart'].forEach(id=>{const el=$(id);if(el)el.innerHTML='';});
   ST.btc.chartReady=ST.gold.chartReady=ST.silver.chartReady=false;
 }
-function mountChart(cid, sym) {
+function mountChart(cid,sym){
   if(!window.TradingView) return;
-  new TradingView.widget({autosize:true, symbol:sym, interval:'5', timezone:'Asia/Kolkata',
-    theme: document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light',
-    style:'1', locale:'en', enable_publishing:false, hide_legend:false, save_image:false, container_id:cid});
+  new TradingView.widget({autosize:true,symbol:sym,interval:'5',timezone:'Asia/Kolkata',
+    theme:document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light',
+    style:'1',locale:'en',enable_publishing:false,hide_legend:false,save_image:false,container_id:cid});
+}
+function dataSourceFor(m){return m==='btc'?'binance':'twelvedata';}
+function chartSourceFor(m){
+  if(m==='btc')  return 'BINANCE:BTCUSDT';
+  if(m==='gold') return 'OANDA:XAUUSD';
+  return 'OANDA:XAGUSD';
 }
 
-// ─── SESSIONS ─────────────────────────────────────────────────────────────────
-const SCFG = {us:{o:13.5,c:20},uk:{o:8,c:16},eu:{o:7,c:15},jp:{o:0,c:6},hk:{o:1.5,c:8},au:{o:22,c:5}};
-const SW_BTC = {us:7,uk:5,eu:4,jp:4,hk:3,au:2};
-const SW_MET = {us:8,uk:8,eu:5,jp:2};
+// ─── SESSIONS ─────────────────────────────────────────────────────
+const SCFG={us:{o:13.5,c:20},uk:{o:8,c:16},eu:{o:7,c:15},jp:{o:0,c:6},hk:{o:1.5,c:8},au:{o:22,c:5}};
+const SW_BTC={us:7,uk:5,eu:4,jp:4,hk:3,au:2};
+const SW_MET={us:8,uk:8,eu:5,jp:2};
 
-function sessInfo(k, h) {
-  const {o,c}=SCFG[k], cross=c<o; let oh=o, ch=c;
-  if(cross){if(h<c)oh=o-24; else ch=c+24;}
-  const open=h>=oh&&h<ch; let state='Closed', w=0;
+function sessInfo(k,h){
+  const{o,c}=SCFG[k],cross=c<o;let oh=o,ch=c;
+  if(cross){if(h<c)oh=o-24;else ch=c+24;}
+  const open=h>=oh&&h<ch;let state='Closed',w=0;
   if(open){state='Open';w=1;}
   else if(h>=oh-1&&h<oh){state='Opening soon';w=.7;}
   else if(h>=ch&&h<ch+1){state='Just closed';w=-.18;}
-  const now=Date.now(), mid=new Date().setUTCHours(0,0,0,0);
+  const now=Date.now(),mid=new Date().setUTCHours(0,0,0,0);
   let nO,nC;
   if(open){nC=mid+((ch%24+24)%24)*3.6e6;if(nC<now)nC+=86400000;nO=nC+86400000;}
   else{let no=o;while(no<=h)no+=24;nO=mid+no*3.6e6;nC=nO+((c-o+24)%24)*3.6e6;}
   const tl=open
     ?`Open till ${new Date(nC).toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour:'numeric',minute:'2-digit',hour12:true})} · ${diffTxt(nC-now)} left`
     :`Opens ${new Date(nO).toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour:'numeric',minute:'2-digit',hour12:true})} · ${diffTxt(nO-now)} away`;
-  return {state, w, win:`${fmtIST(o)} — ${fmtIST(c)}`, timer:tl, open};
+  return{state,w,win:`${fmtIST(o)} — ${fmtIST(c)}`,timer:tl,open};
 }
-
-function renderSess(gridId, elMap, sw) {
-  const h=utcH(); let score=0, active=[];
+function renderSess(gridId,elMap,sw){
+  const h=utcH();let score=0,active=[];
   Object.keys(elMap).forEach(k=>{
-    const i=sessInfo(k,h), e=elMap[k];
+    const i=sessInfo(k,h),e=elMap[k];
     if(e.s)e.s.textContent=i.state;
     if(e.w)e.w.textContent=i.win;
     if(e.t)e.t.textContent=i.timer;
-    if(i.open||i.state==='Opening soon') active.push(k.toUpperCase());
+    if(i.open||i.state==='Opening soon')active.push(k.toUpperCase());
     score+=i.w*(sw[k]||1);
   });
-  const g=$(gridId); if(!g) return {score:0,active};
+  const g=$(gridId);if(!g)return{score:0,active};
   [...g.children].forEach(c=>c.classList.remove('active'));
   Object.keys(elMap).forEach(k=>{
     const i=sessInfo(k,h);
     if(i.open||i.state==='Opening soon'){const c=g.querySelector(`[data-s="${k}"]`);if(c)c.classList.add('active');}
   });
-  return {score: score/Object.values(sw).reduce((a,b)=>a+b,0), active};
+  return{score:score/Object.values(sw).reduce((a,b)=>a+b,0),active};
 }
 
-// ─── MATHS ────────────────────────────────────────────────────────────────────
-function ema(arr, p) {const k=2/(p+1);let e=arr[0];for(let i=1;i<arr.length;i++)e=arr[i]*k+e*(1-k);return e;}
-function rsi(c, p=14) {
-  if(c.length<p+1) return 50;
+// ─── MATHS ────────────────────────────────────────────────────────
+function ema(arr,p){const k=2/(p+1);let e=arr[0];for(let i=1;i<arr.length;i++)e=arr[i]*k+e*(1-k);return e;}
+function rsi(c,p=14){
+  if(c.length<p+1)return 50;
   let g=0,l=0;
   for(let i=c.length-p;i<c.length;i++){const d=c[i]-c[i-1];if(d>=0)g+=d;else l+=Math.abs(d);}
-  if(!l) return 100;
+  if(!l)return 100;
   return 100-100/(1+(g/p)/(l/p));
 }
-function atr(kd, p=14) {
+function atr(kd,p=14){
   const tr=[];
   for(let i=1;i<kd.length;i++){
     const h=+kd[i][2],lo=+kd[i][3],pc=+kd[i-1][4];
@@ -610,80 +717,84 @@ function atr(kd, p=14) {
   }
   return tr.slice(-p).reduce((a,b)=>a+b,0)/p;
 }
-function macd(c) {
+function macd(c){
   const f=c.map((_,i)=>ema(c.slice(0,i+1),12));
   const s=c.map((_,i)=>ema(c.slice(0,i+1),26));
   const line=f.map((v,i)=>v-s[i]).slice(26);
   const sig=line.map((_,i)=>ema(line.slice(0,i+1),9));
-  return {hist:(line[line.length-1]||0)-(sig[sig.length-1]||0)};
+  return{hist:(line[line.length-1]||0)-(sig[sig.length-1]||0)};
 }
-function bbands(c, p=20) {
-  const sl=c.slice(-p), mean=sl.reduce((a,b)=>a+b,0)/p;
+function bbands(c,p=20){
+  const sl=c.slice(-p),mean=sl.reduce((a,b)=>a+b,0)/p;
   const std=Math.sqrt(sl.reduce((a,v)=>a+(v-mean)**2,0)/p);
-  return {upper:mean+2*std, lower:mean-2*std, mid:mean};
+  return{upper:mean+2*std,lower:mean-2*std,mid:mean};
 }
-function volRatio(kd) {
+function volRatio(kd){
   const v=kd.map(k=>+k[5]);
-  return (v.slice(-5).reduce((a,b)=>a+b,0)/5)/((v.slice(-20).reduce((a,b)=>a+b,0)/20)||1);
+  return(v.slice(-5).reduce((a,b)=>a+b,0)/5)/((v.slice(-20).reduce((a,b)=>a+b,0)/20)||1);
 }
-function swingLevels(kd, price, look=80, str=3) {
-  const highs=kd.slice(-look).map(k=>+k[2]), lows=kd.slice(-look).map(k=>+k[3]);
-  const sH=[], sL=[];
+function swingLevels(kd,price,look=80,str=3){
+  const highs=kd.slice(-look).map(k=>+k[2]),lows=kd.slice(-look).map(k=>+k[3]);
+  const sH=[],sL=[];
   for(let i=str;i<highs.length-str;i++){
     let iH=true,iL=true;
     for(let j=1;j<=str;j++){
       if(highs[i]<=highs[i-j]||highs[i]<=highs[i+j])iH=false;
       if(lows[i]>=lows[i-j]||lows[i]>=lows[i+j])iL=false;
     }
-    if(iH)sH.push(highs[i]); if(iL)sL.push(lows[i]);
+    if(iH)sH.push(highs[i]);if(iL)sL.push(lows[i]);
   }
-  sH.push(Math.max(...highs)); sL.push(Math.min(...lows));
+  sH.push(Math.max(...highs));sL.push(Math.min(...lows));
   function cluster(arr){
-    arr.sort((a,b)=>a-b); const out=[];
+    arr.sort((a,b)=>a-b);const out=[];
     for(const v of arr){if(!out.length||Math.abs(v-out[out.length-1])/out[out.length-1]>0.0015)out.push(v);}
     return out;
   }
-  return {
-    res: cluster(sH).filter(v=>v>price).sort((a,b)=>a-b),
-    sup: cluster(sL).filter(v=>v<price).sort((a,b)=>b-a)
+  return{
+    res:cluster(sH).filter(v=>v>price).sort((a,b)=>a-b),
+    sup:cluster(sL).filter(v=>v<price).sort((a,b)=>b-a)
   };
 }
-function calcEntries(price, k5, k15, a5, a15) {
+
+// ── Fresh entry calculation (no caching — always recalculated) ────
+function calcEntries(price,k5,k15,a5,a15){
   const c15=k15.map(k=>+k[4]);
-  const e9=ema(c15.slice(-50),9), e21=ema(c15.slice(-80),21), e50=ema(c15.slice(-120),50);
-  const {res:r15,sup:s15}=swingLevels(k15,price,100,3);
-  const {res:r5,sup:s5}=swingLevels(k5,price,100,2);
+  const e9=ema(c15.slice(-50),9),e21=ema(c15.slice(-80),21),e50=ema(c15.slice(-120),50);
+  const{res:r15,sup:s15}=swingLevels(k15,price,100,3);
+  const{res:r5,sup:s5}=swingLevels(k5,price,100,2);
   const gap=price*0.0015;
   const bC=[...s15.filter(v=>price-v>=gap&&price-v<a15*3),...s5.filter(v=>price-v>=gap&&price-v<a5*4),(e9<price-gap)?e9:null,(e21<price-gap)?e21:null,(e50<price-gap)?e50:null].filter(Boolean);
   const sC=[...r15.filter(v=>v-price>=gap&&v-price<a15*3),...r5.filter(v=>v-price>=gap&&v-price<a5*4),(e9>price+gap)?e9:null,(e21>price+gap)?e21:null,(e50>price+gap)?e50:null].filter(Boolean);
-  return {
-    buyEntry:  bC.length ? Math.max(...bC) : price-a15*0.8,
-    sellEntry: sC.length ? Math.min(...sC) : price+a15*0.8
+  return{
+    buyEntry:bC.length?Math.max(...bC):price-a15*0.8,
+    sellEntry:sC.length?Math.min(...sC):price+a15*0.8
   };
 }
-function levelsFromSR(entry, side, res, sup, bATR) {
+function levelsFromSR(entry,side,res,sup,bATR){
   if(side==='buy'){
     const ab=res.filter(v=>v>entry).sort((a,b)=>a-b);
     const be=sup.filter(v=>v<entry).sort((a,b)=>b-a);
-    return {entry, t1:ab[0]||entry+bATR, t2:ab[1]||entry+bATR*1.8, s1:be[0]||entry-bATR*0.7, s2:be[1]||entry-bATR*1.3};
-  } else {
+    return{entry,t1:ab[0]||entry+bATR,t2:ab[1]||entry+bATR*1.8,s1:be[0]||entry-bATR*0.7,s2:be[1]||entry-bATR*1.3};
+  }else{
     const be=sup.filter(v=>v<entry).sort((a,b)=>b-a);
     const ab=res.filter(v=>v>entry).sort((a,b)=>a-b);
-    return {entry, t1:be[0]||entry-bATR, t2:be[1]||entry-bATR*1.8, s1:ab[0]||entry+bATR*0.7, s2:ab[1]||entry+bATR*1.3};
+    return{entry,t1:be[0]||entry-bATR,t2:be[1]||entry-bATR*1.8,s1:ab[0]||entry+bATR*0.7,s2:ab[1]||entry+bATR*1.3};
   }
 }
-function tfScore(kd) {
-  const c=kd.map(k=>+k[4]), last=c[c.length-1];
-  const e20=ema(c.slice(-80),20), e50=ema(c.slice(-80),50);
-  const r14=rsi(c.slice(-50),14), r7=rsi(c.slice(-20),7);
+function tfScore(kd){
+  const c=kd.map(k=>+k[4]),last=c[c.length-1];
+  const e20=ema(c.slice(-80),20),e50=ema(c.slice(-80),50);
+  const r14=rsi(c.slice(-50),14),r7=rsi(c.slice(-20),7);
   const vr=volRatio(kd);
-  return {trendBias:(e20-e50)/last*100, rsiSig:(r14-50)/50*.5+(r7-50)/50*.5, volBoost:vr>1.15?.08:vr<.8?-.05:0, r14, r7};
+  return{trendBias:(e20-e50)/last*100,rsiSig:(r14-50)/50*.5+(r7-50)/50*.5,volBoost:vr>1.15?.08:vr<.8?-.05:0,r14,r7};
 }
-async function runAnalysis(price, k5, k15, k1h, sessScore, active, market, extraInd) {
-  const tf5=tfScore(k5), tf15=tfScore(k15), tf1h=tfScore(k1h);
-  const a5=atr(k5,14), a15=atr(k15,14), a1h=atr(k1h,14);
+
+// ── Main analysis — ALWAYS computes fresh levels (no caching) ─────
+async function runAnalysis(price,k5,k15,k1h,sessScore,active,market,extraInd){
+  const tf5=tfScore(k5),tf15=tfScore(k15),tf1h=tfScore(k1h);
+  const a5=atr(k5,14),a15=atr(k15,14),a1h=atr(k1h,14);
   const bATR=a5*.2+a15*.45+a1h*.35;
-  const sr15=swingLevels(k15,price,100,3), sr1h=swingLevels(k1h,price,80,3);
+  const sr15=swingLevels(k15,price,100,3),sr1h=swingLevels(k1h,price,80,3);
   const allRes=[...sr15.res,...sr1h.res].sort((a,b)=>a-b);
   const allSup=[...sr15.sup,...sr1h.sup].sort((a,b)=>b-a);
   const trendScore=tf5.trendBias*.22+tf15.trendBias*.40+tf1h.trendBias*.38;
@@ -691,27 +802,27 @@ async function runAnalysis(price, k5, k15, k1h, sessScore, active, market, extra
   const volScore  =(tf5.volBoost+tf15.volBoost)*.5;
   let extra=0;
   if(extraInd){
-    const c15=k15.map(k=>+k[4]), c1h=k1h.map(k=>+k[4]);
-    const mc=macd(c15), bb=bbands(c15,20), last=c15[c15.length-1];
+    const c15=k15.map(k=>+k[4]),c1h=k1h.map(k=>+k[4]);
+    const mc=macd(c15),bb=bbands(c15,20),last=c15[c15.length-1];
     const e200=ema(c1h.slice(-200),200);
     extra=(mc.hist>0?.04:-.04)+(last<bb.lower?.05:last>bb.upper?-.05:0)+(price>e200?.03:-.03);
   }
   const rawBias=trendScore*.55+rsiScore*30+sessScore*3+volScore*2+extra*20;
   const normBias=Math.tanh(rawBias/18);
-  let buy=Math.round(clamp(50+normBias*44,8,92)), sell=100-buy;
+  let buy=Math.round(clamp(50+normBias*44,8,92)),sell=100-buy;
   const aligned=[tf5.trendBias,tf15.trendBias,tf1h.trendBias];
-  const allBull=aligned.every(x=>x>0), allBear=aligned.every(x=>x<0);
+  const allBull=aligned.every(x=>x>0),allBear=aligned.every(x=>x<0);
   const rsiX=Math.abs(tf15.r14-50)>20||Math.abs(tf1h.r14-50)>20;
   const diff=Math.abs(buy-sell);
   const conf=Math.round(clamp(50+diff*.55+(allBull||allBear?12:0)+(rsiX?8:0)+Math.abs(sessScore)*8,48,95));
   const clarity=diff>=28?'Very clear':diff>=16?'Clear':diff>=8?'Moderate':'Balanced';
   const dominant=buy>=sell?'BUY':'SELL';
-  const {buyEntry,sellEntry}=calcEntries(price,k5,k15,a5,a15);
-  const st=ST[market];
-  if(!st.lBuy||Math.abs(buyEntry-st.lBuy.entry)/st.lBuy.entry>0.008)
-    st.lBuy=levelsFromSR(buyEntry,'buy',allRes,allSup,bATR);
-  if(!st.lSell||Math.abs(sellEntry-st.lSell.entry)/st.lSell.entry>0.008)
-    st.lSell=levelsFromSR(sellEntry,'sell',allRes,allSup,bATR);
+
+  // ── ALWAYS compute fresh buy/sell levels — no in-memory caching ──
+  const{buyEntry,sellEntry}=calcEntries(price,k5,k15,a5,a15);
+  const buyLevels=levelsFromSR(buyEntry,'buy',allRes,allSup,bATR);
+  const sellLevels=levelsFromSR(sellEntry,'sell',allRes,allSup,bATR);
+
   const sessLine=active.length?active.join(' + ')+' active':'Low session overlap';
   const reasons=[
     `Multi-TF trend: 5m ${tf5.trendBias>0?'▲':'▼'} · 15m ${tf15.trendBias>0?'▲':'▼'} · 1h ${tf1h.trendBias>0?'▲':'▼'} — ${allBull?'all aligned bullish':allBear?'all aligned bearish':'mixed timeframes'}.`,
@@ -720,123 +831,496 @@ async function runAnalysis(price, k5, k15, k1h, sessScore, active, market, extra
     `Targets and stops derived from real swing highs/lows, not fixed ATR multiples.`,
     `${sessLine}. Blended ATR = ${Math.round(bATR)}.`
   ];
-  return {buy, sell, conf, clarity, dominant, buyLevels:st.lBuy, sellLevels:st.lSell, reasons, sessLine, _market:market, _price:price};
+  return{buy,sell,conf,clarity,dominant,buyLevels,sellLevels,reasons,sessLine,sessScore,_market:market,_price:price};
 }
-function renderResult(ids, r, dp=2) {
+
+// ─── RENDER LIVE SETUP LEVELS (always fresh, every refresh) ──────
+// These ALWAYS update. Completely independent of recommendations.
+function renderLiveLevels(ids,r,dp=2){
   $(ids.bP).textContent=`${r.buy}%`;   $(ids.sP).textContent=`${r.sell}%`;
   $(ids.bBar).style.width=`${r.buy}%`; $(ids.sBar).style.width=`${r.sell}%`;
   $(ids.conf).textContent=`${r.conf}%`; $(ids.clarity).textContent=r.clarity;
   $(ids.bT).textContent=`${r.dominant} side has higher probability`;
   $(ids.bTx).textContent=`${r.sessLine}. Confidence ${r.conf}%.`;
   $(ids.banner).className=`banner ${r.dominant==='BUY'?'buy':'sell'}`;
-  const B=r.buyLevels, V=r.sellLevels;
-  if(B){$(ids.BE).textContent=fmtN(B.entry,dp);$(ids.BT1).textContent=fmtN(B.t1,dp);$(ids.BT2).textContent=fmtN(B.t2,dp);$(ids.BS1).textContent=fmtN(B.s1,dp);$(ids.BS2).textContent=fmtN(B.s2,dp);}
-  if(V){$(ids.SE).textContent=fmtN(V.entry,dp);$(ids.ST1).textContent=fmtN(V.t1,dp);$(ids.ST2).textContent=fmtN(V.t2,dp);$(ids.SS1).textContent=fmtN(V.s1,dp);$(ids.SS2).textContent=fmtN(V.s2,dp);}
-  $(ids.lock).textContent='🔒 Entry locked'; $(ids.lock).className='lock-b';
-  $(ids.lockNote).textContent='Wait for price to reach entry zone.';
-  if(r._market){hSaveSignal(r._market,r,r._price,dp);hRender(r._market,r._price);}
+
+  // BUY setup levels — always fresh from algo
+  const B=r.buyLevels;
+  if(B){
+    $(ids.BE).textContent=fmtN(B.entry,dp);
+    $(ids.BT1).textContent=fmtN(B.t1,dp);
+    $(ids.BT2).textContent=fmtN(B.t2,dp);
+    $(ids.BS1).textContent=fmtN(B.s1,dp);
+    $(ids.BS2).textContent=fmtN(B.s2,dp);
+  }
+  // SELL setup levels — always fresh from algo
+  const V=r.sellLevels;
+  if(V){
+    $(ids.SE).textContent=fmtN(V.entry,dp);
+    $(ids.ST1).textContent=fmtN(V.t1,dp);
+    $(ids.ST2).textContent=fmtN(V.t2,dp);
+    $(ids.SS1).textContent=fmtN(V.s1,dp);
+    $(ids.SS2).textContent=fmtN(V.s2,dp);
+  }
+
+  // Lock badge: is current price near the dominant side's entry?
+  const domLv=r.dominant==='BUY'?r.buyLevels:r.sellLevels;
+  let atEntry=false;
+  if(domLv&&domLv.entry&&r._price){
+    const pct=Math.abs(r._price-domLv.entry)/domLv.entry;
+    const side=r.dominant==='BUY'?(r._price<=domLv.entry):(r._price>=domLv.entry);
+    atEntry=side&&pct<=ENTRY_PCT;
+  }
+  const lockEl=$(ids.lock), noteEl=$(ids.lockNote);
+  if(atEntry){
+    lockEl.textContent='✅ Price at entry — check recommendation';
+    lockEl.className='lock-b hit';
+    noteEl.textContent='Entry zone reached! Recommendation may fire.';
+  }else{
+    lockEl.textContent='⏳ Waiting for entry';
+    lockEl.className='lock-b';
+    noteEl.textContent='These levels update every refresh. Recommendation fires only at entry.';
+  }
 }
 
-// ─── BTC ──────────────────────────────────────────────────────────────────────
-async function btcKlines(interval, limit=150) {
-  const st=ST.btc, key=interval, now=Date.now();
-  if(st.kCache[key]&&now-st.kCache[key].ts<25000) return st.kCache[key].data;
+// ═══════════════════════════════════════════════════════
+// RECOMMENDATION ENGINE
+// Key design:
+//   1. Live levels always update (renderLiveLevels)
+//   2. Recommendation lifecycle: watch → pending → t1/t2/sl/expired
+//   3. One active rec per market at a time
+//   4. Once issued, levels are FROZEN until resolved/expired
+//   5. REC_VALID_MS: watch auto-expires (never entered)
+//   6. PENDING_MAX_MS: hard cap even if in trade
+// ═══════════════════════════════════════════════════════
+
+// ─── SUPABASE REST ────────────────────────────────────────────────
+function sbHeaders(){
+  return{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+}
+async function sbSelect(params){
+  try{
+    let qs='market=eq.'+params.market;
+    if(params.outcome) qs+='&outcome=eq.'+params.outcome;
+    if(params.orderBy) qs+='&order='+params.orderBy+'.desc';
+    if(params.limit)   qs+='&limit='+params.limit;
+    if(params.offset)  qs+='&offset='+params.offset;
+    const url=SB_URL+'/rest/v1/scalper_signals?select=*&'+qs;
+    const r=await fetch(url,{headers:sbHeaders()});
+    if(!r.ok)return[];
+    return await r.json();
+  }catch(e){console.warn('sbSelect:',e);return[];}
+}
+async function sbSelectActive(market){
+  // Fetch both watch and pending in one call
+  try{
+    const url=SB_URL+'/rest/v1/scalper_signals?select=*&market=eq.'+market+'&outcome=in.(watch,pending)&order=ts_ms.desc&limit=5';
+    const r=await fetch(url,{headers:sbHeaders()});
+    if(!r.ok)return[];
+    return await r.json();
+  }catch(e){console.warn('sbSelectActive:',e);return[];}
+}
+async function sbCount(market){
+  try{
+    const url=SB_URL+'/rest/v1/scalper_signals?select=id&market=eq.'+market;
+    const r=await fetch(url,{headers:Object.assign({},sbHeaders(),{'Prefer':'count=exact'})});
+    if(!r.ok)return 0;
+    const ct=r.headers.get('content-range');
+    return ct?parseInt(ct.split('/')[1]||'0'):0;
+  }catch(e){return 0;}
+}
+async function sbInsert(row){
+  try{
+    await fetch(SB_URL+'/rest/v1/scalper_signals',{method:'POST',headers:sbHeaders(),body:JSON.stringify(row)});
+  }catch(e){console.warn('sbInsert:',e);}
+}
+async function sbUpdate(id,updates){
+  try{
+    await fetch(SB_URL+'/rest/v1/scalper_signals?id=eq.'+id,{method:'PATCH',headers:sbHeaders(),body:JSON.stringify(updates)});
+  }catch(e){console.warn('sbUpdate:',e);}
+}
+async function sbDelete(market){
+  try{
+    await fetch(SB_URL+'/rest/v1/scalper_signals?market=eq.'+market,{method:'DELETE',headers:sbHeaders()});
+  }catch(e){console.warn('sbDelete:',e);}
+}
+
+// ── Quality gate check ────────────────────────────────────────────
+function passesQualityGate(res){
+  const clarity=(res.clarity||'').toLowerCase();
+  return res.conf>=MIN_CONF
+    && (res.dominant==='BUY'?res.buy:res.sell)>=MIN_DOM_PROB
+    && VALID_CLARITY.includes(clarity);
+}
+
+// ── SL cooldown check ─────────────────────────────────────────────
+async function getSlCooldownUntil(market,dir){
+  try{
+    const url=SB_URL+'/rest/v1/scalper_signals?select=ts_ms&market=eq.'+market+'&outcome=eq.sl&dir=eq.'+dir+'&order=ts_ms.desc&limit=1';
+    const r=await fetch(url,{headers:sbHeaders()});
+    if(!r.ok)return 0;
+    const rows=await r.json();
+    if(!rows.length||!rows[0].ts_ms)return 0;
+    return rows[0].ts_ms+SL_COOLDOWN_MS;
+  }catch(e){return 0;}
+}
+
+// ── RECOMMENDATION MANAGER ────────────────────────────────────────
+// Called on every price refresh. Implements the full lifecycle.
+async function manageRecommendation(market,res){
+  const price=res._price;
+  const now=Date.now();
+
+  // ── Step 1: Load current active record ──────────────────────────
+  const activeRows=await sbSelectActive(market);
+
+  // Expire stale duplicates — keep only the most recent
+  if(activeRows.length>1){
+    for(let i=1;i<activeRows.length;i++){
+      await sbUpdate(activeRows[i].id,{outcome:'expired',resolved_at:now,resolve_reason:'duplicate_cleanup'});
+    }
+  }
+  const active=activeRows[0]||null;
+
+  // ── Step 2: Handle existing active recommendation ────────────────
+  if(active){
+    const age=now-active.ts_ms;
+    const b=active.dir==='BUY';
+
+    // ── 2a: Pending (entry confirmed) — only candle check resolves it ──
+    // NEVER use live price ticks to resolve SL/T1/T2 — a single tick can
+    // momentarily touch SL and recover. Only hRetroCheck (closed candles) resolves.
+    if(active.outcome==='pending'){
+      // Hard cap — position open too long
+      if(age>PENDING_MAX_MS){
+        await sbUpdate(active.id,{outcome:'expired',last_price:price,last_price_at:now,resolved_at:now,resolve_reason:'max_duration_exceeded'});
+        ST[market].activeRec=null;
+        ST[market].lastResolvedAt=now; // cooldown so we don't re-create immediately
+        return;
+      }
+      // Still live — just update the live price display
+      await sbUpdate(active.id,{last_price:price,last_price_at:now});
+      ST[market].activeRec=active;
+      return;
+    }
+
+    // ── 2b: Watch (waiting for entry) ──────────────────────────────
+    if(active.outcome==='watch'){
+      // Did price reach entry?
+      const entryHit=b?(price<=active.entry):(price>=active.entry);
+      const proximityHit=Math.abs(price-active.entry)/active.entry<=ENTRY_PCT;
+
+      if(entryHit||proximityHit){
+        // Promote to pending
+        await sbUpdate(active.id,{
+          outcome:'pending',entered:true,entry_touched_ms:now,
+          last_price:price,last_price_at:now
+        });
+        ST[market].activeRec={...active,outcome:'pending',entered:true};
+        return;
+      }
+
+      // ── Has the setup become invalid? ──────────────────────────────
+      // 1. Age exceeded validity window
+      if(age>REC_VALID_MS){
+        await sbUpdate(active.id,{outcome:'expired',last_price:price,last_price_at:now,resolved_at:now,resolve_reason:'validity_window_expired'});
+        ST[market].activeRec=null;
+        ST[market].lastResolvedAt=now;
+        return;
+      }
+
+      // 2. Price moved too far in the WRONG direction (away from entry, past a reasonable point)
+      // BUY: entry is BELOW price. If price keeps rising and is now >8% above entry → unlikely to return
+      // SELL: entry is ABOVE price. If price keeps falling and is now >8% below entry → unlikely to return
+      const awayPct = b
+        ? (price - active.entry) / active.entry   // how far ABOVE buy entry price is
+        : (active.entry - price) / active.entry;  // how far BELOW sell entry price is
+      if(awayPct > 0.08){
+        await sbUpdate(active.id,{outcome:'expired',last_price:price,last_price_at:now,resolved_at:now,resolve_reason:'price_moved_away'});
+        ST[market].activeRec=null;
+        ST[market].lastResolvedAt=now;
+        return;
+      }
+
+      // 3. T1 already crossed in the right direction BEFORE entry hit
+      // e.g. BUY: price surged past T1 without ever dipping to entry
+      // Only expire if price is already well past T1 (2% buffer) — not just touching it
+      const t1Pct = b
+        ? (price - active.t1) / active.t1   // how far price is above T1
+        : (active.t1 - price) / active.t1;  // how far price is below T1
+      if(t1Pct > 0.02){
+        await sbUpdate(active.id,{outcome:'expired',last_price:price,last_price_at:now,resolved_at:now,resolve_reason:'target_crossed_before_entry'});
+        ST[market].activeRec=null;
+        ST[market].lastResolvedAt=now;
+        return;
+      }
+
+      // Still valid watch — update live price
+      await sbUpdate(active.id,{last_price:price,last_price_at:now});
+      ST[market].activeRec=active;
+      return;
+    }
+  }
+
+  // ── Step 3: No active rec — evaluate if we should create one ─────
+  // Post-resolution cooldown: wait 5 minutes after any resolution before new rec
+  // This prevents the same levels from immediately re-firing after SL/expiry
+  const POST_RES_COOLDOWN = 5 * 60 * 1000;
+  if(ST[market].lastResolvedAt && (now - ST[market].lastResolvedAt) < POST_RES_COOLDOWN){
+    console.log('[ScalperPro] Post-resolution cooldown active for '+market+' — '+Math.round((POST_RES_COOLDOWN-(now-ST[market].lastResolvedAt))/1000)+'s remaining');
+    return;
+  }
+
+  const _dbg = {market, conf:res.conf, clarity:res.clarity, dominant:res.dominant,
+    buy:res.buy, sell:res.sell, price,
+    buyEntry:res.buyLevels?.entry, sellEntry:res.sellLevels?.entry};
+  console.log('[ScalperPro] Checking for new rec:', _dbg);
+
+  if(!passesQualityGate(res)){
+    console.log('[ScalperPro] BLOCKED: quality gate — conf='+res.conf+' clarity='+res.clarity+' domP='+(res.dominant==='BUY'?res.buy:res.sell));
+    return;
+  }
+
+  const dir=res.dominant;
+  const lv=dir==='BUY'?res.buyLevels:res.sellLevels;
+  if(!lv||!lv.entry||!lv.t1){
+    console.log('[ScalperPro] BLOCKED: no valid levels');
+    return;
+  }
+
+  // Malformed level guard
+  if(dir==='BUY'  && lv.t1 <= lv.entry){ console.log('[ScalperPro] BLOCKED: malformed BUY levels t1<=entry'); return; }
+  if(dir==='SELL' && lv.t1 >= lv.entry){ console.log('[ScalperPro] BLOCKED: malformed SELL levels t1>=entry'); return; }
+
+  // Cooldown check
+  const cdUntil=await getSlCooldownUntil(market,dir);
+  if(cdUntil&&now<cdUntil){ console.log('[ScalperPro] BLOCKED: SL cooldown until '+new Date(cdUntil).toLocaleTimeString()); return; }
+
+  // Entry proximity:
+  // BUY entry is BELOW current price (waiting for pullback to support)
+  //   → fire as pending if price already at/below entry (with 0.1% buffer)
+  //   → issue watch if price is within 5% above entry
+  // SELL entry is ABOVE current price (waiting for push to resistance)
+  //   → fire as pending if price already at/above entry (with 0.1% buffer)
+  //   → issue watch if price is within 5% below entry
+  const entryHit = dir==='BUY' ? (price <= lv.entry * 1.001) : (price >= lv.entry * 0.999);
+  if(!entryHit){
+    const entryDist = Math.abs(price - lv.entry) / lv.entry;
+    if(entryDist > 0.05){ console.log('[ScalperPro] BLOCKED: entry too far '+((entryDist*100).toFixed(2))+'% entry='+lv.entry+' price='+price); return; }
+  }
+  console.log('[ScalperPro] PASSING all gates — creating rec dir='+dir+' entry='+lv.entry+' price='+price+' entryHit='+entryHit+' t1='+lv.t1+' s1='+lv.s1);
+
+  await sbInsert({
+    id:now,market,dir,price,
+    entry:lv.entry,t1:lv.t1,t2:lv.t2,s1:lv.s1,s2:lv.s2,
+    buy_p:res.buy,sell_p:res.sell,conf:res.conf,clarity:res.clarity,
+    ts:istFull(),ts_ms:now,
+    outcome:entryHit?'pending':'watch',
+    dp:HDP[market]||2,
+    entered:entryHit,
+    valid_until_ms:now+REC_VALID_MS,
+    entry_touched_ms:entryHit?now:null,
+    data_source:dataSourceFor(market),
+    chart_source:chartSourceFor(market),
+    session_score:res.sessScore,
+    sess_line:res.sessLine,
+    algo_version:ALGO_VERSION,
+    last_price:price,
+    last_price_at:now,
+    stale:false
+  });
+}
+
+// ── Candle-based retro outcome check (every 5 min) ────────────────
+async function hRetroCheck(market){
+  try{
+    const activeRows=await sbSelectActive(market);
+    if(!activeRows.length) return;
+
+    let kl=[];
+    try{
+      if(market==='btc'){
+        const r=await fetchWT('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=5m&limit=288',10000);
+        if(!r.ok)return;
+        // [ts, open, high, low, close]
+        kl=(await r.json()).map(k=>[+k[0],+k[1],+k[2],+k[3],+k[4]]);
+      }else{
+        const r2=await fetchWT('https://api.twelvedata.com/time_series?symbol=XAU%2FUSD&interval=5min&outputsize=288&apikey='+TD_KEY+'&format=JSON',12000);
+        if(!r2.ok)return;
+        const j=await r2.json();
+        if(j.status==='error'||!j.values)return;
+        const sc=(market==='silver')?((ST.silver.price||1)/(ST.gold.price||1)):1;
+        // [ts, open, high, low, close]
+        kl=j.values.slice().reverse().map(v=>[new Date(v.datetime).getTime(),+v.open*sc,+v.high*sc,+v.low*sc,+v.close*sc]);
+      }
+    }catch(e){console.warn('hRetroCheck fetch:',e);return;}
+
+    // Drop last candle (still forming)
+    const completedKl=kl.slice(0,-1);
+    const now=Date.now();
+
+    for(const s of activeRows){
+      const b=s.dir==='BUY';
+      const after=completedKl.filter(k=>k[0]>(s.ts_ms||0));
+      if(!after.length)continue;
+
+      // candle format: [ts, open, high, low, close]
+      // resolveOutcome: given a single candle and a pending position,
+      // return 'sl'|'t1'|'t2'|null using open direction to break same-candle ties
+      function resolveCandle(candle, isBuy, s1, t1, t2){
+        const [,o,hi,lo,c]=candle;
+        const hitSL = isBuy ? lo<=s1 : hi>=s1;
+        const hitT1 = isBuy ? hi>=t1 : lo<=t1;
+        const hitT2 = isBuy ? hi>=t2 : lo<=t2;
+        if(!hitSL && !hitT1 && !hitT2) return null;
+        // Both SL and target hit on same candle — use candle direction to decide
+        if(hitSL && (hitT1||hitT2)){
+          // Bullish candle (close>open) → price went up first → target wins
+          // Bearish candle (close<open) → price went down first → SL wins
+          const bullish = c > o;
+          if(isBuy)  return bullish ? (hitT2?'t2':'t1') : 'sl';
+          else       return bullish ? 'sl' : (hitT2?'t2':'t1');
+        }
+        if(hitT2) return 't2';
+        if(hitT1) return 't1';
+        return 'sl';
+      }
+
+      if(s.outcome==='watch'){
+        // Find first candle where entry was touched
+        let entryIdx=-1;
+        for(let j=0;j<after.length;j++){
+          const [,o,hi,lo,c]=after[j];
+          // Entry hit if candle touched the entry level
+          if(b ? lo<=s.entry : hi>=s.entry){ entryIdx=j; break; }
+        }
+        if(entryIdx<0){
+          if((now-(s.ts_ms||0))>REC_VALID_MS){
+            await sbUpdate(s.id,{outcome:'expired',resolved_at:now,resolve_reason:'watch_expired_no_entry'});
+          }
+          continue;
+        }
+        // Entry hit — evaluate from that candle onward
+        let outcome=null;
+        for(let k=entryIdx;k<after.length;k++){
+          outcome=resolveCandle(after[k],b,s.s1,s.t1,s.t2);
+          if(outcome) break;
+        }
+        const entryTouchedMs=s.entry_touched_ms||after[entryIdx][0]||now;
+        if(outcome){
+          await sbUpdate(s.id,{outcome,entered:true,entry_touched_ms:entryTouchedMs,
+            last_price:ST[market]?.price||s.price,last_price_at:now,
+            resolved_at:now,resolve_reason:'candle_hit_'+outcome});
+          ST[market].lastResolvedAt=now;
+        }else{
+          await sbUpdate(s.id,{outcome:'pending',entered:true,entry_touched_ms:entryTouchedMs,
+            last_price:ST[market]?.price||s.price,last_price_at:now});
+        }
+      }else if(s.outcome==='pending'){
+        // Already in trade — only check candles AFTER entry was confirmed
+        const entryTs=(s.entry_touched_ms&&s.entry_touched_ms>s.ts_ms)
+          ? s.entry_touched_ms : s.ts_ms||0;
+        const tradeKl=completedKl.filter(k=>k[0]>entryTs);
+        if(!tradeKl.length)continue;
+        let outcome=null;
+        for(const k of tradeKl){
+          outcome=resolveCandle(k,b,s.s1,s.t1,s.t2);
+          if(outcome) break;
+        }
+        if(outcome){
+          await sbUpdate(s.id,{outcome,last_price:ST[market]?.price||s.price,
+            last_price_at:now,resolved_at:now,resolve_reason:'candle_hit_'+outcome});
+          ST[market].lastResolvedAt=now;
+        }else{
+          await sbUpdate(s.id,{last_price:ST[market]?.price||s.price,last_price_at:now});
+        }
+      }
+    }
+  }catch(e){console.warn('hRetroCheck:',e);}
+}
+
+// ─── BTC DATA ─────────────────────────────────────────────────────
+async function btcKlines(interval,limit=150){
+  const st=ST.btc,key=interval,now=Date.now();
+  if(st.kCache[key]&&now-st.kCache[key].ts<25000)return st.kCache[key].data;
   const r=await fetchWT(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=${limit}`);
-  if(!r.ok) throw new Error('binance klines');
-  const d=await r.json(); st.kCache[key]={ts:now,data:d}; return d;
+  if(!r.ok)throw new Error('binance klines');
+  const d=await r.json();st.kCache[key]={ts:now,data:d};return d;
 }
 const BTC_IDS={bP:'btcBuyP',sP:'btcSellP',bBar:'btcBuyBar',sBar:'btcSellBar',conf:'btcConf',clarity:'btcClarity',bT:'btcBiasTitle',bTx:'btcBiasText',banner:'btcBanner',BE:'btcBE',BT1:'btcBT1',BT2:'btcBT2',BS1:'btcBS1',BS2:'btcBS2',SE:'btcSE',ST1:'btcST1',ST2:'btcST2',SS1:'btcSS1',SS2:'btcSS2',lock:'btcLock',lockNote:'btcLockNote'};
 const BTC_SE_EL={us:{s:$('usS'),w:$('usW'),t:$('usT')},uk:{s:$('ukS'),w:$('ukW'),t:$('ukT')},eu:{s:$('euS'),w:$('euW'),t:$('euT')},jp:{s:$('jpS'),w:$('jpW'),t:$('jpT')},hk:{s:$('hkS'),w:$('hkW'),t:$('hkT')},au:{s:$('auS'),w:$('auW'),t:$('auT')}};
 
-async function updateBTC(manual=false) {
-  const st=ST.btc; if(st.fetching)return; st.fetching=true;
+async function updateBTC(manual=false){
+  const st=ST.btc;if(st.fetching)return;st.fetching=true;
   $('btcState').innerHTML='<span class="spinner"></span>';
-  try {
+  try{
     const r=await fetchWT('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
-    if(!r.ok) throw new Error();
+    if(!r.ok)throw new Error();
     const price=Number((await r.json()).price);
-    if(!Number.isFinite(price)||price<=0) throw new Error();
-    st.price=price;
-    $('btcPrice').textContent=fmtN(price); $('btcAt').textContent=`Updated ${nowIST()}`;
+    if(!Number.isFinite(price)||price<=0)throw new Error();
+    st.price=price;st.lastPriceAt=Date.now();
+    $('btcPrice').textContent=fmtN(price);$('btcAt').textContent=`Updated ${nowIST()}`;
     $('btcState').textContent=manual?'Refreshed ✓':'Binance live ✓';
     $('btcErr').classList.remove('show');
-    const {score,active}=renderSess('btcSG',BTC_SE_EL,SW_BTC);
-    const [k5,k15,k1h]=await Promise.all([btcKlines('5m',150),btcKlines('15m',150),btcKlines('1h',120)]);
+    const{score,active}=renderSess('btcSG',BTC_SE_EL,SW_BTC);
+    const[k5,k15,k1h]=await Promise.all([btcKlines('5m',150),btcKlines('15m',150),btcKlines('1h',120)]);
     const res=await runAnalysis(price,k5,k15,k1h,score,active,'btc',false);
-    st.analysis=res; renderResult(BTC_IDS,res,2);
-  } catch(e) {
-    $('btcState').textContent='Fetch failed'; $('btcErr').classList.add('show');
-  } finally { st.fetching=false; }
+    st.analysis=res;
+    // Step A: Always render fresh live levels
+    renderLiveLevels(BTC_IDS,res,2);
+    // Step B: Manage recommendation lifecycle (separate from levels)
+    await manageRecommendation('btc',res);
+    // Step C: Refresh history UI
+    await hRender('btc',price);
+  }catch(e){
+    $('btcState').textContent='Fetch failed';$('btcErr').classList.add('show');
+  }finally{st.fetching=false;}
 }
 
-// ─── SPOT PRICE (fawazahmed0 CDN — no key, CORS open, always free) ────────────
-async function metalsSpotPrice(metal) {
+// ─── METALS DATA ──────────────────────────────────────────────────
+async function metalsSpotPrice(metal){
   const sym=metal==='gold'?'xau':'xag';
-  // Primary mirror
-  try {
+  const tdSym=metal==='gold'?'XAU/USD':'XAG/USD';
+  try{
+    const r0=await fetchWT(`https://api.twelvedata.com/price?symbol=${encodeURIComponent(tdSym)}&apikey=${TD_KEY}`,8000);
+    if(r0.ok){const j0=await r0.json();const p0=parseFloat(j0.price);if(Number.isFinite(p0)&&p0>1)return p0;}
+  }catch(_){}
+  try{
     const r=await fetchWT(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${sym}.json`,8000);
-    if(r.ok){
-      const j=await r.json();
-      // j[sym]['usd'] = how many USD per 1 troy oz
-      const p=j[sym]['usd'];
-      if(Number.isFinite(p)&&p>1) return p; // gold >$1, silver >$1 always
-    }
-  } catch(_) {}
-  // Fallback mirror (dated snapshot on same CDN)
-  try {
+    if(r.ok){const j=await r.json();const p=j[sym]['usd'];if(Number.isFinite(p)&&p>1)return p;}
+  }catch(_){}
+  try{
     const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
     const r=await fetchWT(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${yesterday}/v1/currencies/${sym}.json`,8000);
-    if(r.ok){
-      const j=await r.json();
-      const p=j[sym]['usd'];
-      if(Number.isFinite(p)&&p>1) return p;
-    }
-  } catch(_) {}
+    if(r.ok){const j=await r.json();const p=j[sym]['usd'];if(Number.isFinite(p)&&p>1)return p;}
+  }catch(_){}
   throw new Error(`${metal} spot price unavailable`);
 }
-
-// ─── KLINES via TwelveData ───────────────────────────────────────────────────
-// Gold: XAU/USD via TwelveData (free plan supports it)
-// Silver: Gold klines scaled by Au/Ag ratio — ~0.92 correlation, valid for TA
-async function metalsKlines(metal, interval, outputsize=90) {
-  const st=ST[metal], key=interval, now=Date.now();
-  if(st.kCache[key]&&now-st.kCache[key].ts<30000) return st.kCache[key].data;
-
-  // Always fetch Gold klines from TwelveData (works on free plan)
+async function metalsKlines(metal,interval,outputsize=90){
+  const st=ST[metal],key=interval,now=Date.now();
+  if(st.kCache[key]&&now-st.kCache[key].ts<30000)return st.kCache[key].data;
   const url=`https://api.twelvedata.com/time_series?symbol=XAU%2FUSD&interval=${interval}&outputsize=${outputsize}&apikey=${TD_KEY}&format=JSON`;
   const r=await fetchWT(url,12000);
-  if(!r.ok) throw new Error('TwelveData network error');
+  if(!r.ok)throw new Error('TwelveData network error');
   const j=await r.json();
-  if(j.status==='error') throw new Error(j.message||'TwelveData error');
+  if(j.status==='error')throw new Error(j.message||'TwelveData error');
   const values=j.values||[];
-  if(!values.length) throw new Error('empty klines');
-
-  // Parse gold klines (newest-first → reverse)
+  if(!values.length)throw new Error('empty klines');
   const goldData=values.reverse().map(v=>[
     new Date(v.datetime).getTime(),
-    parseFloat(v.open), parseFloat(v.high), parseFloat(v.low), parseFloat(v.close),
+    parseFloat(v.open),parseFloat(v.high),parseFloat(v.low),parseFloat(v.close),
     parseFloat(v.volume||0)
   ]);
-
-  if(metal==='gold'){
-    st.kCache[key]={ts:now,data:goldData}; return goldData;
-  }
-
-  // Silver: scale Gold candles by current Au/Ag spot ratio
-  // This preserves all relative price movements and structure for TA
+  if(metal==='gold'){st.kCache[key]={ts:now,data:goldData};return goldData;}
   const goldSpot=ST.gold.price||goldData[goldData.length-1][4];
   const silverSpot=ST.silver.price||1;
-  const ratio=silverSpot/goldSpot; // ~0.009–0.012 typically
+  const ratio=silverSpot/goldSpot;
   const silverData=goldData.map(c=>[
-    c[0],
-    +(c[1]*ratio).toFixed(4), +(c[2]*ratio).toFixed(4),
-    +(c[3]*ratio).toFixed(4), +(c[4]*ratio).toFixed(4),
-    c[5]
+    c[0],+(c[1]*ratio).toFixed(4),+(c[2]*ratio).toFixed(4),+(c[3]*ratio).toFixed(4),+(c[4]*ratio).toFixed(4),c[5]
   ]);
-  st.kCache[key]={ts:now,data:silverData}; return silverData;
+  st.kCache[key]={ts:now,data:silverData};return silverData;
 }
 
-// ─── METALS UPDATE ────────────────────────────────────────────────────────────
 const M_SE_G={uk:{s:$('gukS'),w:$('gukW'),t:$('gukT')},us:{s:$('gusS'),w:$('gusW'),t:$('gusT')},eu:{s:$('geuS'),w:$('geuW'),t:$('geuT')},jp:{s:$('gjpS'),w:$('gjpW'),t:$('gjpT')}};
 const M_SE_S={uk:{s:$('svukS'),w:$('svukW'),t:$('svukT')},us:{s:$('svusS'),w:$('svusW'),t:$('svusT')},eu:{s:$('sveuS'),w:$('sveuW'),t:$('sveuT')},jp:{s:$('svjpS'),w:$('svjpW'),t:$('svjpT')}};
 
@@ -844,45 +1328,40 @@ function mIDs(m){
   return{bP:`${m}BuyP`,sP:`${m}SellP`,bBar:`${m}BuyBar`,sBar:`${m}SellBar`,conf:`${m}Conf`,clarity:`${m}Clarity`,bT:`${m}BiasTitle`,bTx:`${m}BiasText`,banner:`${m}Banner`,BE:`${m}BE`,BT1:`${m}BT1`,BT2:`${m}BT2`,BS1:`${m}BS1`,BS2:`${m}BS2`,SE:`${m}SE`,ST1:`${m}ST1`,ST2:`${m}ST2`,SS1:`${m}SS1`,SS2:`${m}SS2`,lock:`${m}Lock`,lockNote:`${m}LockNote`};
 }
 
-async function updateMetal(metal) {
-  const st=ST[metal], p=metal, dp=metal==='gold'?2:3;
-  const sEls=metal==='gold'?M_SE_G:M_SE_S, sgId=`${metal}SG`;
+async function updateMetal(metal){
+  const st=ST[metal],p=metal,dp=metal==='gold'?2:3;
+  const sEls=metal==='gold'?M_SE_G:M_SE_S,sgId=`${metal}SG`;
   const tvSym=metal==='gold'?'OANDA:XAUUSD':'OANDA:XAGUSD';
-  if(st.fetching) return; st.fetching=true;
+  if(st.fetching)return;st.fetching=true;
   $(`${p}State`).innerHTML='<span class="spinner"></span>';
-  try {
-    // STEP 1 — spot price (no key needed)
+  try{
     const price=await metalsSpotPrice(metal);
-    st.price=price;
+    st.price=price;st.lastPriceAt=Date.now();
     $(`${p}Price`).textContent=fmtN(price,dp);
     $(`${p}At`).textContent=`Updated ${nowIST()}`;
     $(`${p}Err`).classList.remove('show');
-
-    // STEP 2 — TradingView chart
     if(!st.chartReady&&window.TradingView){mountChart(`${p}Chart`,tvSym);st.chartReady=true;}
-
-    // STEP 3 — sessions
-    const {score,active}=renderSess(sgId,sEls,SW_MET);
-
-    // STEP 4 — klines + algo via TwelveData
+    const{score,active}=renderSess(sgId,sEls,SW_MET);
     $(`${p}State`).textContent='Fetching algo...';
-    const [k5,k15,k1h]=await Promise.all([
-      metalsKlines(metal,'5min',90),
-      metalsKlines(metal,'15min',90),
-      metalsKlines(metal,'1h',80)
-    ]);
+    const[k5,k15,k1h]=await Promise.all([metalsKlines(metal,'5min',90),metalsKlines(metal,'15min',90),metalsKlines(metal,'1h',80)]);
     const res=await runAnalysis(price,k5,k15,k1h,score,active,metal,true);
-    st.analysis=res; renderResult(mIDs(metal),res,dp);
+    st.analysis=res;
+    // Step A: Always render fresh live levels
+    renderLiveLevels(mIDs(metal),res,dp);
+    // Step B: Manage recommendation lifecycle
+    await manageRecommendation(metal,res);
+    // Step C: Refresh history UI
+    await hRender(metal,price);
     $(`${p}State`).textContent='Live ✓';
-  } catch(e) {
+  }catch(e){
     $(`${p}State`).textContent='Error';
     $(`${p}Err`).classList.add('show');
     $(`${p}Err`).textContent=`Error: ${e.message}`;
-    console.error(metal, e);
-  } finally { st.fetching=false; }
+    console.error(metal,e);
+  }finally{st.fetching=false;}
 }
 
-// ─── NEWS ─────────────────────────────────────────────────────────────────────
+// ─── NEWS ─────────────────────────────────────────────────────────
 const RSS=[
   {url:'https://cointelegraph.com/rss',label:'Cointelegraph'},
   {url:'https://decrypt.co/feed',label:'Decrypt'},
@@ -905,45 +1384,227 @@ async function fetchNews(){
   $('btcNews').innerHTML=all.slice(0,10).map(a=>{const s=sentim(a.title),ag=ago(a.date);return`<a class="nc" href="${esc(a.url)}" target="_blank" rel="noopener noreferrer"><div class="nm"><span class="ns">${esc(a.source)}</span>${ag?`<span class="nt">${ag}</span>`:''}<span class="sent ${s}">${s==='bullish'?'▲ Bullish':s==='bearish'?'▼ Bearish':'— Neutral'}</span></div><div class="nx">${esc(a.title)}</div></a>`;}).join('');
 }
 
-// ─── NAVIGATION ───────────────────────────────────────────────────────────────
-$('openBtc').addEventListener('click', async()=>{ hOpenMarket('btc');
+// ─── HISTORY RENDER ───────────────────────────────────────────────
+const HPAGE={btc:1,gold:1,silver:1};
+const HPP=6;
+const HDP={btc:2,gold:2,silver:3};
+
+function isReliableSignalRow(s){
+  const clarity=(s&&s.clarity?s.clarity:'').toLowerCase();
+  return s&&s.conf>=MIN_CONF&&VALID_CLARITY.includes(clarity);
+}
+
+function validityBar(s){
+  const now=Date.now();
+  const total=s.outcome==='pending'?PENDING_MAX_MS:REC_VALID_MS;
+  const age=now-(s.ts_ms||0);
+  const pct=Math.max(0,Math.min(100,100-(age/total*100)));
+  const cls=pct>50?'':pct>20?'warning':'danger';
+  const remaining=Math.max(0,total-age);
+  const remTxt=diffTxt(remaining);
+  return `<div class="validity-bar-wrap">
+    <div class="vb-meta"><span>${s.outcome==='pending'?'Trade open':'Watching for entry'}</span><span>${remTxt} remaining</span></div>
+    <div class="vb-bg"><div class="vb-fill ${cls}" style="width:${pct}%"></div></div>
+  </div>`;
+}
+
+function obBadge(o){
+  if(o==='watch')   return '<span class="outcome-badge ob-pending" style="color:var(--pr);border-color:rgb(110 168 254/.4)">⏳ Watching entry</span>';
+  if(o==='t2')      return '<span class="outcome-badge ob-t2">🎯 T2 Hit</span>';
+  if(o==='t1')      return '<span class="outcome-badge ob-t1">✅ T1 Hit</span>';
+  if(o==='sl')      return '<span class="outcome-badge ob-sl">❌ SL Hit</span>';
+  if(o==='expired') return '<span class="outcome-badge ob-pending" style="color:var(--mu);border-color:var(--bor)">⏰ Expired</span>';
+  return '<span class="outcome-badge ob-pending">⚡ In trade</span>';
+}
+
+function sigCard(s){
+  const b=s.dir==='BUY',dp=s.dp||2;
+  const f=v=>isFinite(+v)?new Intl.NumberFormat('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp}).format(+v):'--';
+  const isActive=s.outcome==='watch'||s.outcome==='pending';
+  const displayOutcome=s.outcome;
+
+  // Resolve reason label
+  let resolveNote='';
+  if(s.resolve_reason==='validity_window_expired')resolveNote='⏰ Setup timed out — price never reached entry within 3h.';
+  else if(s.resolve_reason==='price_moved_away')resolveNote='↩ Price moved too far from entry — setup invalidated.';
+  else if(s.resolve_reason==='target_crossed_before_entry')resolveNote='⚠ Target crossed before entry — setup skipped.';
+  else if(s.resolve_reason==='max_duration_exceeded')resolveNote='⏱ Position exceeded 6h cap — closed.';
+  else if(s.resolve_reason&&s.resolve_reason.startsWith('candle_hit'))resolveNote='';
+  else if(s.outcome==='expired')resolveNote='Setup expired — entry was not reached in time.';
+  else if(s.outcome==='watch')resolveNote='Watching for price to reach entry zone. Levels are locked — won\'t change until resolved.';
+  else if(s.outcome==='pending')resolveNote='Entry confirmed! Tracking T1/T2/SL…';
+  else if(s.outcome==='t1')resolveNote='First target reached ✅';
+  else if(s.outcome==='t2')resolveNote='Full target reached 🎯';
+  else if(s.outcome==='sl')resolveNote='Stop loss hit ❌';
+
+  const rTag=`<span style="font-size:9px;font-weight:900;letter-spacing:.06em;padding:.2rem .55rem;border-radius:var(--rf);background:${b?'rgb(61 220 151/.12)':'rgb(255 123 114/.12)'};color:${b?'var(--bu)':'var(--se)'};border:1px solid ${b?'rgb(61 220 151/.3)':'rgb(255 123 114/.3)'}">🎯 TRADE RECOMMENDED</span>`;
+
+  return `<div class="sig-card ${b?'buy-card':'sell-card'}">
+    <div style="margin-bottom:.5rem">${rTag}</div>
+    <div class="sig-top">
+      <div>
+        <div class="sig-dir ${b?'buy-tx':'sell-tx'}">${s.dir}</div>
+        <div class="sig-time">🕐 ${s.ts} <span style="color:var(--pr);font-weight:700">(${timeAgo(s.ts_ms)})</span></div>
+        <div class="sig-time" style="margin-top:.1rem">At $${f(s.price)} · Conf ${s.conf}% · ${s.clarity||''}</div>
+        <div style="display:grid;gap:.3rem;margin-top:.4rem">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;margin-bottom:3px"><span style="color:var(--bu)">▲ BUY</span><span style="color:var(--bu)">${s.buy_p}%</span></div>
+            <div style="height:7px;border-radius:99px;background:var(--off);overflow:hidden"><div style="height:100%;border-radius:99px;background:var(--bu);width:${s.buy_p}%"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;margin-bottom:3px"><span style="color:var(--se)">▼ SELL</span><span style="color:var(--se)">${s.sell_p}%</span></div>
+            <div style="height:7px;border-radius:99px;background:var(--off);overflow:hidden"><div style="height:100%;border-radius:99px;background:var(--se);width:${s.sell_p}%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="sig-right">
+        ${obBadge(displayOutcome)}
+        ${isActive?validityBar(s):''}
+      </div>
+    </div>
+    <div class="sig-levels">
+      <div class="slv-item slv-entry"><div class="slv-lbl">Entry 🔒</div><div class="slv-val">$${f(s.entry)}</div></div>
+      <div class="slv-item slv-t"><div class="slv-lbl">Target 1</div><div class="slv-val">$${f(s.t1)}</div></div>
+      <div class="slv-item slv-t"><div class="slv-lbl">Target 2</div><div class="slv-val">$${f(s.t2)}</div></div>
+      <div class="slv-item slv-s"><div class="slv-lbl">Stop 1</div><div class="slv-val">$${f(s.s1)}</div></div>
+      <div class="slv-item slv-s"><div class="slv-lbl">Stop 2</div><div class="slv-val">$${f(s.s2)}</div></div>
+      <div class="slv-item"><div class="slv-lbl">Mkt price</div><div class="slv-val" style="color:var(--tx)">$${f(s.last_price||s.price)}</div></div>
+    </div>
+    ${resolveNote?`<div class="subtle" style="font-size:var(--xs);border-top:1px solid var(--div);padding-top:var(--s2)">${resolveNote}</div>`:''}
+  </div>`;
+}
+
+async function renderOpenPos(market,cur){
+  const wrap=$(market+'OpenPos');if(!wrap)return;
+  try{
+    const rows=await sbSelect({market,outcome:'pending',limit:2,orderBy:'ts_ms'});
+    const live=rows.filter(s=>s.entered).slice(0,1);
+    if(!live.length){wrap.classList.add('op-hidden');return;}
+    const s=live[0],b=s.dir==='BUY',dp=HDP[market]||2;
+    wrap.classList.remove('op-hidden');
+    $(market+'OpenCard').className='open-pos '+(b?'buy-open':'sell-open');
+    $(market+'OpDir').textContent=s.dir;
+    $(market+'OpDir').className='op-dir '+(b?'buy-tx':'sell-tx');
+    $(market+'OpTime').innerHTML='Signal: '+s.ts+' ('+timeAgo(s.ts_ms)+') <span style="font-size:10px;font-weight:700;color:var(--bu)">✅ Entry hit</span>';
+    $(market+'OpProb').innerHTML='<span style="color:var(--bu);font-weight:800">▲ BUY '+s.buy_p+'%</span>&nbsp;&nbsp;<span style="color:var(--se);font-weight:800">▼ SELL '+s.sell_p+'%</span>&nbsp;&nbsp;Conf '+s.conf+'%';
+    $(market+'OpEntry').textContent=fmtP(s.entry,dp);
+    $(market+'OpT1').textContent=fmtP(s.t1,dp);
+    $(market+'OpT2').textContent=fmtP(s.t2,dp);
+    $(market+'OpS1').textContent=fmtP(s.s1,dp);
+    $(market+'OpS2').textContent=fmtP(s.s2,dp);
+    $(market+'OpLive').textContent=fmtP(cur||s.last_price||s.price,dp);
+  }catch(e){wrap.classList.add('op-hidden');console.warn('renderOpenPos:',e);}
+}
+
+async function hRender(market,cur){
+  const grid=$(market+'HistGrid'),more=$(market+'HistMore');
+  if(!grid)return;
+
+  await renderOpenPos(market,cur);
+
+  // Update status badge
+  const dot=$(market+'RecDot'),txt=$(market+'RecTxt');
+  if(dot&&txt){
+    const activeRows=await sbSelectActive(market);
+    const live=activeRows.find(s=>s.outcome==='pending'&&s.entered);
+    const watch=activeRows.find(s=>s.outcome==='watch');
+    if(live){
+      dot.style.background='var(--bu)';dot.style.animation='opulse 1.5s infinite';
+      txt.textContent='⚡ In trade — tracking T1/T2/SL';txt.style.color='var(--bu)';
+    }else if(watch){
+      dot.style.background='var(--pr)';dot.style.animation='none';
+      txt.textContent='👀 Setup found — watching for entry';txt.style.color='var(--pr)';
+    }else{
+      dot.style.background='var(--mu)';dot.style.animation='none';
+      txt.textContent='Algo scanning — no high-conviction setup yet';txt.style.color='var(--mu)';
+    }
+
+    // Show active rec in card area — always show if it exists (it passed gates when created)
+    if(live||watch){
+      const activeRec=live||watch;
+      grid.innerHTML=sigCard(activeRec);
+      if(more)more.style.display='none';
+      return;
+    }
+  }
+
+  // No active rec — show history
+  try{
+    const total=await sbCount(market);
+    const offset=(HPAGE[market]-1)*HPP;
+    let data=await sbSelect({market,limit:HPP,offset,orderBy:'ts_ms'});
+    // Filter: show only resolved signals of good quality
+    data=data.filter(s=>isReliableSignalRow(s)&&s.outcome!=='watch'&&s.outcome!=='pending');
+    if(!data.length){
+      grid.innerHTML='<div class="hist-empty">No resolved recommendations yet. Recommendations only appear when Conf ≥65%, clarity is Clear or better, AND price reaches the entry zone.</div>';
+      if(more)more.style.display='none';return;
+    }
+    grid.innerHTML=data.map(sigCard).join('');
+    if(more)more.style.display=(total>offset+HPP)?'flex':'none';
+  }catch(e){
+    grid.innerHTML=`<div class="hist-empty">⚠ Could not load: ${e.message}</div>`;
+    console.error('hRender:',e);
+  }
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────────────
+var H_RC_TIMERS={};
+var H_RENDER_TIMERS={};
+
+async function hOpenMarket(market){
+  HPAGE[market]=1;
+  await hRetroCheck(market);
+  await hRender(market,ST[market].price);
+  if(H_RC_TIMERS[market])clearInterval(H_RC_TIMERS[market]);
+  H_RC_TIMERS[market]=setInterval(async()=>{await hRetroCheck(market);hRender(market,ST[market].price);},5*60*1000);
+  if(H_RENDER_TIMERS[market])clearInterval(H_RENDER_TIMERS[market]);
+  H_RENDER_TIMERS[market]=setInterval(()=>hRender(market,ST[market].price),30000);
+}
+
+$('openBtc').addEventListener('click',async()=>{
+  hOpenMarket('btc');
   setScreen('btcScreen');
   if(!ST.btc.chartReady&&window.TradingView){mountChart('btcChart','BINANCE:BTCUSDT');ST.btc.chartReady=true;}
   renderSess('btcSG',BTC_SE_EL,SW_BTC);
   fetchNews();
   await updateBTC(false);
-  clearInterval(ST.btc.timer); clearInterval(ST.btc.stimer);
+  clearInterval(ST.btc.timer);clearInterval(ST.btc.stimer);
   ST.btc.timer=setInterval(()=>updateBTC(false),30000);
   ST.btc.stimer=setInterval(()=>renderSess('btcSG',BTC_SE_EL,SW_BTC),1000);
 });
 
-$('openGold').addEventListener('click', async()=>{ hOpenMarket('gold');
+$('openGold').addEventListener('click',async()=>{
+  hOpenMarket('gold');
   setScreen('goldScreen');
   renderSess('goldSG',M_SE_G,SW_MET);
   await updateMetal('gold');
-  clearInterval(ST.gold.timer); clearInterval(ST.gold.stimer);
+  clearInterval(ST.gold.timer);clearInterval(ST.gold.stimer);
   ST.gold.timer=setInterval(()=>updateMetal('gold'),60000);
   ST.gold.stimer=setInterval(()=>renderSess('goldSG',M_SE_G,SW_MET),1000);
 });
 
-$('openSilver').addEventListener('click', async()=>{ hOpenMarket('silver');
+$('openSilver').addEventListener('click',async()=>{
+  hOpenMarket('silver');
   setScreen('silverScreen');
   renderSess('silverSG',M_SE_S,SW_MET);
   await updateMetal('silver');
-  clearInterval(ST.silver.timer); clearInterval(ST.silver.stimer);
+  clearInterval(ST.silver.timer);clearInterval(ST.silver.stimer);
   ST.silver.timer=setInterval(()=>updateMetal('silver'),60000);
   ST.silver.stimer=setInterval(()=>renderSess('silverSG',M_SE_S,SW_MET),1000);
 });
 
-$('btcBack').addEventListener('click',    ()=>{setScreen('homeScreen');clearInterval(ST.btc.timer);clearInterval(ST.btc.stimer);});
-$('goldBack').addEventListener('click',   ()=>{setScreen('homeScreen');clearInterval(ST.gold.timer);clearInterval(ST.gold.stimer);});
-$('silverBack').addEventListener('click', ()=>{setScreen('homeScreen');clearInterval(ST.silver.timer);clearInterval(ST.silver.stimer);});
+$('btcBack').addEventListener('click',()=>{setScreen('homeScreen');clearInterval(ST.btc.timer);clearInterval(ST.btc.stimer);clearInterval(H_RC_TIMERS.btc);clearInterval(H_RENDER_TIMERS.btc);});
+$('goldBack').addEventListener('click',()=>{setScreen('homeScreen');clearInterval(ST.gold.timer);clearInterval(ST.gold.stimer);clearInterval(H_RC_TIMERS.gold);clearInterval(H_RENDER_TIMERS.gold);});
+$('silverBack').addEventListener('click',()=>{setScreen('homeScreen');clearInterval(ST.silver.timer);clearInterval(ST.silver.stimer);clearInterval(H_RC_TIMERS.silver);clearInterval(H_RENDER_TIMERS.silver);});
 
 ['btcTheme','goldTheme','silverTheme'].forEach(id=>$(id).addEventListener('click',toggleTheme));
-$('btcRetry').addEventListener('click',    ()=>updateBTC(true));
-$('goldRetry').addEventListener('click',   ()=>updateMetal('gold'));
-$('silverRetry').addEventListener('click', ()=>updateMetal('silver'));
-$('btcNR').addEventListener('click', fetchNews);
+$('btcRetry').addEventListener('click',()=>updateBTC(true));
+$('btcPriceRefresh').addEventListener('click',()=>updateBTC(true));
+$('goldRetry').addEventListener('click',()=>updateMetal('gold'));
+$('goldPriceRefresh').addEventListener('click',()=>updateMetal('gold'));
+$('silverRetry').addEventListener('click',()=>updateMetal('silver'));
+$('silverPriceRefresh').addEventListener('click',()=>updateMetal('silver'));
+$('btcNR').addEventListener('click',fetchNews);
 
 $('btcWhy').addEventListener('click',()=>{if(ST.btc.analysis){$('reasonList').innerHTML=ST.btc.analysis.reasons.map(t=>`<div class="rc">${t}</div>`).join('');$('whyModal').classList.add('open');}});
 $('goldWhy').addEventListener('click',()=>{if(ST.gold.analysis){$('reasonList').innerHTML=ST.gold.analysis.reasons.map(t=>`<div class="rc">${t}</div>`).join('');$('whyModal').classList.add('open');}});
@@ -951,294 +1612,23 @@ $('silverWhy').addEventListener('click',()=>{if(ST.silver.analysis){$('reasonLis
 $('closeModal').addEventListener('click',()=>$('whyModal').classList.remove('open'));
 $('whyModal').addEventListener('click',e=>{if(e.target===$('whyModal'))$('whyModal').classList.remove('open');});
 
-// Init BTC session clocks on page load
-renderSess('btcSG',BTC_SE_EL,SW_BTC);
-
-// ═══════════════════════════════════════════════════════════════════
-// SIGNAL HISTORY — Pure fetch() REST API (no Supabase SDK needed)
-// ═══════════════════════════════════════════════════════════════════
-
-// ── Globals ────────────────────────────────────────────────────────
-var HPAGE  = {btc:1, gold:1, silver:1};
-var HPP    = 6;
-var HDP    = {btc:2, gold:2, silver:3};
-
-var SB_URL = 'https://tbzgvmcmlkxaexdnkesp.supabase.co';
-var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRiemd2bWNtbGt4YWV4ZG5rZXNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDgwOTUsImV4cCI6MjA5MzEyNDA5NX0.NbZtv_HjVgAi7_WCIt_ysDTlEzpWys815SEuYt7MUwY';
-
-// ── REST helpers (pure fetch, no SDK) ─────────────────────────────
-function sbHeaders() {
-  return {
-    'apikey': SB_KEY,
-    'Authorization': 'Bearer ' + SB_KEY,
-    'Content-Type': 'application/json',
-    'Prefer': 'return=representation'
-  };
-}
-
-async function sbSelect(params) {
-  // params: market, outcome, limit, offset, orderBy
-  try {
-    var qs = 'market=eq.' + params.market;
-    if(params.outcome) qs += '&outcome=eq.' + params.outcome;
-    if(params.orderBy) qs += '&order=' + params.orderBy + '.desc';
-    if(params.limit)   qs += '&limit=' + params.limit;
-    if(params.offset)  qs += '&offset=' + params.offset;
-    var url = SB_URL + '/rest/v1/scalper_signals?select=*&' + qs;
-    var r = await fetch(url, { headers: sbHeaders() });
-    if(!r.ok) return [];
-    return await r.json();
-  } catch(e) { console.warn('sbSelect:', e); return []; }
-}
-
-async function sbCount(market) {
-  try {
-    var url = SB_URL + '/rest/v1/scalper_signals?select=id&market=eq.' + market;
-    var r = await fetch(url, { headers: Object.assign({}, sbHeaders(), {'Prefer':'count=exact'}) });
-    if(!r.ok) return 0;
-    var ct = r.headers.get('content-range');
-    return ct ? parseInt(ct.split('/')[1]||'0') : 0;
-  } catch(e) { return 0; }
-}
-
-async function sbInsert(row) {
-  try {
-    await fetch(SB_URL + '/rest/v1/scalper_signals', {
-      method: 'POST',
-      headers: sbHeaders(),
-      body: JSON.stringify(row)
-    });
-  } catch(e) { console.warn('sbInsert:', e); }
-}
-
-async function sbUpdate(id, updates) {
-  try {
-    await fetch(SB_URL + '/rest/v1/scalper_signals?id=eq.' + id, {
-      method: 'PATCH',
-      headers: sbHeaders(),
-      body: JSON.stringify(updates)
-    });
-  } catch(e) { console.warn('sbUpdate:', e); }
-}
-
-async function sbDelete(market) {
-  try {
-    await fetch(SB_URL + '/rest/v1/scalper_signals?market=eq.' + market, {
-      method: 'DELETE',
-      headers: sbHeaders()
-    });
-  } catch(e) { console.warn('sbDelete:', e); }
-}
-
-// ── Helpers ────────────────────────────────────────────────────────
-function istFull() {
-  return new Date().toLocaleString('en-IN', {
-    timeZone:'Asia/Kolkata', day:'2-digit', month:'short',
-    year:'numeric', hour:'numeric', minute:'2-digit', hour12:true
-  });
-}
-
-function timeAgo(tsMs) {
-  if(!tsMs) return '';
-  var diff = Date.now() - tsMs;
-  var m = Math.floor(diff/60000);
-  if(m < 1)  return 'just now';
-  if(m < 60) return m + 'm ago';
-  var h = Math.floor(m/60);
-  if(h < 24) return h + 'h ' + (m%60 ? (m%60)+'m ' : '') + 'ago';
-  return Math.floor(h/24) + 'd ago';
-}
-
-function fmtP(v, dp) {
-  return isFinite(+v)
-    ? '$' + new Intl.NumberFormat('en-US', {minimumFractionDigits:dp, maximumFractionDigits:dp}).format(+v)
-    : '--';
-}
-
-// ── Save signal ────────────────────────────────────────────────────
-async function hSaveSignal(market, res, price, dp) {
-  try {
-    // Dedup: check last signal
-    var last = await sbSelect({market:market, limit:1, orderBy:'ts_ms'});
-    if(last.length) {
-      var l = last[0];
-      if(l.dir === res.dominant && Math.abs(l.price - price)/price < 0.001) return;
-    }
-    var lv = res.dominant === 'BUY' ? res.buyLevels : res.sellLevels;
-    if(!lv) return;
-    await sbInsert({
-      id: Date.now(),
-      market: market,
-      dir: res.dominant,
-      price: price,
-      entry: lv.entry, t1: lv.t1, t2: lv.t2, s1: lv.s1, s2: lv.s2,
-      buy_p: res.buy, sell_p: res.sell, conf: res.conf, clarity: res.clarity,
-      ts: istFull(), ts_ms: Date.now(),
-      outcome: 'pending', dp: dp || 2
-    });
-  } catch(e) { console.warn('hSaveSignal:', e); }
-}
-
-// ── Live outcome check ─────────────────────────────────────────────
-async function hCheckLive(market, cur) {
-  try {
-    var pending = await sbSelect({market:market, outcome:'pending'});
-    for(var i=0; i<pending.length; i++) {
-      var s = pending[i], b = s.dir==='BUY', outcome = null;
-      if(b ? cur>=s.t2 : cur<=s.t2)       outcome = 't2';
-      else if(b ? cur>=s.t1 : cur<=s.t1)  outcome = 't1';
-      else if(b ? cur<=s.s1 : cur>=s.s1)  outcome = 'sl';
-      if(outcome) await sbUpdate(s.id, {outcome:outcome});
-    }
-  } catch(e) { console.warn('hCheckLive:', e); }
-}
-
-// ── Retroactive kline check ────────────────────────────────────────
-async function hRetroCheck(market) {
-  try {
-    var pending = await sbSelect({market:market, outcome:'pending'});
-    if(!pending.length) return;
-    var kl = [];
-    if(market === 'btc') {
-      var r = await fetchWT('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=168', 10000);
-      if(!r.ok) return;
-      var raw = await r.json();
-      kl = raw.map(function(k){ return [+k[0], +k[2], +k[3]]; });
-    } else {
-      var r2 = await fetchWT('https://api.twelvedata.com/time_series?symbol=XAU%2FUSD&interval=1h&outputsize=90&apikey=' + TD_KEY + '&format=JSON', 12000);
-      if(!r2.ok) return;
-      var j = await r2.json();
-      if(j.status === 'error') return;
-      var vals = (j.values||[]).slice().reverse();
-      var sc = 1;
-      if(market === 'silver') {
-        sc = (ST.silver.price||1) / (ST.gold.price||1);
+// ── Clear + load more buttons ──
+(function(){
+  const markets=['btc','gold','silver'];
+  for(const m of markets){
+    const cb=$(m+'ClearHist');
+    if(cb)cb.addEventListener('click',()=>{
+      if(confirm('Delete all trade recommendations for '+m.toUpperCase()+'?')){
+        sbDelete(m).then(()=>{HPAGE[m]=1;ST[m].activeRec=null;hRender(m);});
       }
-      kl = vals.map(function(v){ return [new Date(v.datetime).getTime(), +v.high*sc, +v.low*sc]; });
-    }
-    for(var i=0; i<pending.length; i++) {
-      var s = pending[i], b = s.dir==='BUY', outcome = null;
-      var after = kl.filter(function(k){ return k[0] >= (s.ts_ms||0); });
-      for(var j=0; j<after.length; j++) {
-        var hi = after[j][1], lo = after[j][2];
-        if(b ? hi>=s.t2 : lo<=s.t2)      { outcome='t2'; break; }
-        if(b ? hi>=s.t1 : lo<=s.t1)      { outcome='t1'; break; }
-        if(b ? lo<=s.s1 : hi>=s.s1)      { outcome='sl'; break; }
-      }
-      if(outcome) await sbUpdate(s.id, {outcome:outcome});
-    }
-  } catch(e) { console.warn('hRetroCheck:', e); }
-}
-
-// ── Outcome badge ──────────────────────────────────────────────────
-function obBadge(o) {
-  if(o==='t2') return '<span class="outcome-badge ob-t2">&#127919; T2 Hit</span>';
-  if(o==='t1') return '<span class="outcome-badge ob-t1">&#9989; T1 Hit</span>';
-  if(o==='sl') return '<span class="outcome-badge ob-sl">&#10060; SL Hit</span>';
-  return '<span class="outcome-badge ob-pending">&#8987; Pending</span>';
-}
-
-// ── Open position card ─────────────────────────────────────────────
-async function renderOpenPos(market, cur) {
-  var wrap = document.getElementById(market+'OpenPos');
-  if(!wrap) return;
-  try {
-    var data = await sbSelect({market:market, outcome:'pending', limit:1, orderBy:'ts_ms'});
-    if(!data.length) { wrap.classList.add('op-hidden'); return; }
-    var s = data[0], b = s.dir==='BUY', dp = HDP[market]||2;
-    wrap.classList.remove('op-hidden');
-    document.getElementById(market+'OpenCard').className = 'open-pos ' + (b?'buy-open':'sell-open');
-    document.getElementById(market+'OpDir').textContent  = s.dir;
-    document.getElementById(market+'OpDir').className    = 'op-dir ' + (b?'buy-tx':'sell-tx');
-    document.getElementById(market+'OpTime').textContent = 'Signal at: ' + s.ts + ' (' + timeAgo(s.ts_ms) + ')';
-    document.getElementById(market+'OpProb').textContent = (b?s.buy_p:s.sell_p) + '% · Conf ' + s.conf + '%';
-    document.getElementById(market+'OpEntry').textContent = fmtP(s.entry, dp);
-    document.getElementById(market+'OpT1').textContent    = fmtP(s.t1, dp);
-    document.getElementById(market+'OpT2').textContent    = fmtP(s.t2, dp);
-    document.getElementById(market+'OpS1').textContent    = fmtP(s.s1, dp);
-    document.getElementById(market+'OpS2').textContent    = fmtP(s.s2, dp);
-    document.getElementById(market+'OpLive').textContent  = fmtP(cur || s.price, dp);
-  } catch(e) { wrap.classList.add('op-hidden'); console.warn('renderOpenPos:', e); }
-}
-
-// ── Signal card HTML ───────────────────────────────────────────────
-function sigCard(s) {
-  var b = s.dir==='BUY', dp = s.dp||2;
-  var f = function(v) { return isFinite(+v) ? new Intl.NumberFormat('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp}).format(+v) : '--'; };
-  var note = s.outcome==='t2' ? 'Full target reached &#127919;'
-           : s.outcome==='t1' ? 'First target reached &#9989;'
-           : s.outcome==='sl' ? 'Stop loss hit &#10060;'
-           : 'Waiting for price to reach levels…';
-  return '<div class="sig-card ' + (b?'buy-card':'sell-card') + '">'
-    + '<div class="sig-top"><div>'
-    + '<div class="sig-dir ' + (b?'buy-tx':'sell-tx') + '">' + s.dir + '</div>'
-    + '<div class="sig-time">&#128337; ' + s.ts + ' <span style="color:var(--pr);font-weight:700">(' + timeAgo(s.ts_ms) + ')</span></div>'
-    + '<div class="sig-time" style="margin-top:.1rem">At $' + f(s.price) + ' · ' + (b?s.buy_p:s.sell_p) + '% · Conf ' + s.conf + '%</div>'
-    + '</div><div class="sig-right">' + obBadge(s.outcome)
-    + '<div class="subtle" style="font-size:10px;margin-top:.3rem">' + (s.clarity||'') + '</div></div></div>'
-    + '<div class="sig-levels">'
-    + '<div class="slv-item slv-entry"><div class="slv-lbl">Entry</div><div class="slv-val">$' + f(s.entry) + '</div></div>'
-    + '<div class="slv-item slv-t"><div class="slv-lbl">Target 1</div><div class="slv-val">$' + f(s.t1) + '</div></div>'
-    + '<div class="slv-item slv-t"><div class="slv-lbl">Target 2</div><div class="slv-val">$' + f(s.t2) + '</div></div>'
-    + '<div class="slv-item slv-s"><div class="slv-lbl">Stop 1</div><div class="slv-val">$' + f(s.s1) + '</div></div>'
-    + '<div class="slv-item slv-s"><div class="slv-lbl">Stop 2</div><div class="slv-val">$' + f(s.s2) + '</div></div>'
-    + '<div class="slv-item"><div class="slv-lbl">Mkt price</div><div class="slv-val" style="color:var(--tx)">$' + f(s.price) + '</div></div>'
-    + '</div>'
-    + '<div class="subtle" style="font-size:var(--xs);border-top:1px solid var(--div);padding-top:var(--s2)">' + note + '</div>'
-    + '</div>';
-}
-
-// ── Render history list ────────────────────────────────────────────
-async function hRender(market, cur) {
-  var grid = document.getElementById(market+'HistGrid');
-  var more = document.getElementById(market+'HistMore');
-  if(!grid) return;
-  if(cur != null) await hCheckLive(market, cur);
-  await renderOpenPos(market, cur);
-  try {
-    var total  = await sbCount(market);
-    var offset = (HPAGE[market]-1) * HPP;
-    var data   = await sbSelect({market:market, limit:HPP, offset:offset, orderBy:'ts_ms'});
-    if(!data.length) {
-      grid.innerHTML = '<div class="hist-empty">No signals yet. They appear automatically after each analysis.</div>';
-      if(more) more.style.display='none'; return;
-    }
-    grid.innerHTML = data.map(sigCard).join('');
-    if(more) more.style.display = (total > offset + HPP) ? 'flex' : 'none';
-  } catch(e) {
-    grid.innerHTML = '<div class="hist-empty">&#9888; Could not load history: ' + e.message + '</div>';
-    console.error('hRender:', e);
-  }
-}
-
-// ── Open market handler ────────────────────────────────────────────
-async function hOpenMarket(market) {
-  HPAGE[market] = 1;
-  hRender(market, ST[market].price);
-  await hRetroCheck(market);
-  hRender(market, ST[market].price);
-}
-
-// ── Wire clear + load-more buttons ────────────────────────────────
-(function() {
-  var markets = ['btc','gold','silver'];
-  for(var i=0; i<markets.length; i++) {
-    (function(m) {
-      var cb = document.getElementById(m+'ClearHist');
-      if(cb) cb.addEventListener('click', function() {
-        if(confirm('Delete all signal history for ' + m.toUpperCase() + '?')) {
-          sbDelete(m).then(function() { HPAGE[m]=1; hRender(m); });
-        }
-      });
-      var lb = document.getElementById(m+'HLM');
-      if(lb) lb.addEventListener('click', function() {
-        HPAGE[m]++;
-        hRender(m, ST[m].price);
-      });
-    })(markets[i]);
+    });
+    const lb=$(m+'HLM');
+    if(lb)lb.addEventListener('click',()=>{HPAGE[m]++;hRender(m,ST[m].price);});
   }
 })();
 
+// Init session clocks
+renderSess('btcSG',BTC_SE_EL,SW_BTC);
 </script>
 </body>
 </html>
