@@ -6,9 +6,9 @@
 <title>ScalperPro · Market Intelligence</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════════════
+/* 
    DESIGN TOKENS
-═══════════════════════════════════════════ */
+ */
 :root {
   --bg:        #060810;
   --bg2:       #0c0f1a;
@@ -62,7 +62,7 @@
 html { -webkit-text-size-adjust: none; scroll-behavior: smooth }
 body {
   font-family: var(--font-ui);
-  font-size: 14px;
+  font-size: 16px;
   color: var(--tx);
   background: var(--bg);
   min-height: 100dvh;
@@ -80,17 +80,17 @@ body::before {
   pointer-events: none; z-index: 0; opacity: 0.4;
 }
 
-/* ═══════════════════════════════════════════
+/* 
    LAYOUT
-═══════════════════════════════════════════ */
+ */
 .app { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; min-height: 100dvh }
 .screen { display: none; flex-direction: column; min-height: 100dvh }
 .screen.on { display: flex }
 .pad { padding: 0 16px }
 
-/* ═══════════════════════════════════════════
+/* 
    HOME SCREEN
-═══════════════════════════════════════════ */
+ */
 .home-wrap {
   display: flex; flex-direction: column;
   min-height: 100dvh; padding: 0 16px 40px;
@@ -107,8 +107,8 @@ body::before {
 }
 .home-sub {
   margin-top: 6px;
-  font-size: 12px; font-weight: 500; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--tx3);
+  font-size: 14px; font-weight: 600; letter-spacing: .04em;
+  color: var(--tx2);
 }
 .home-markets { display: flex; flex-direction: column; gap: 12px }
 .mkt-card {
@@ -140,17 +140,17 @@ body::before {
 .mkt-card.btc .mc-sym   { color: #f7931a }
 .mkt-card.gold .mc-sym  { color: #ffd740 }
 .mkt-card.silver .mc-sym{ color: #90a4c0 }
-.mc-name { font-size: 12px; font-weight: 600; color: var(--tx2); margin-top: 2px; letter-spacing: .04em }
+.mc-name { font-size: 15px; font-weight: 600; color: var(--tx2); margin-top: 4px; letter-spacing: .02em }
 .mc-arrow {
   width: 36px; height: 36px; border-radius: 50%;
   border: 1px solid var(--bor2); display: grid; place-items: center;
   font-size: 16px; color: var(--tx3);
 }
-.home-footer { margin-top: auto; padding-top: 32px; text-align: center; color: var(--tx3); font-size: 11px; letter-spacing: .05em }
+.home-footer { margin-top: auto; padding-top: 32px; text-align: center; color: var(--tx2); font-size: 13px; letter-spacing: .02em }
 
-/* ═══════════════════════════════════════════
+/* 
    TOPBAR
-═══════════════════════════════════════════ */
+ */
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 16px 0; position: sticky; top: 0; z-index: 10;
@@ -158,7 +158,7 @@ body::before {
 }
 .back-btn {
   display: flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 600; color: var(--tx2);
+  font-size: 15px; font-weight: 600; color: var(--tx2);
   padding: 8px 14px; border-radius: var(--rf);
   border: 1px solid var(--bor); background: var(--sur);
   transition: color .15s, border-color .15s;
@@ -173,12 +173,12 @@ body::before {
 }
 .icon-btn:hover { color: var(--tx); border-color: var(--bor2) }
 
-/* ═══════════════════════════════════════════
+/* 
    DASH SECTIONS
-═══════════════════════════════════════════ */
+ */
 .dash-body { padding: 16px 16px 48px; display: flex; flex-direction: column; gap: 14px }
 
-/* ── Price Hero ── */
+/*  Price Hero  */
 .price-hero {
   background: var(--sur); border: 1px solid var(--bor);
   border-radius: var(--rx); padding: 20px;
@@ -192,7 +192,7 @@ body::before {
   pointer-events: none;
 }
 .ph-top { display: flex; align-items: flex-start; justify-content: space-between }
-.ph-label { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--tx3) }
+.ph-label { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--tx2) }
 .ph-badge {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 4px 10px; border-radius: var(--rf); font-size: 11px; font-weight: 700;
@@ -209,21 +209,21 @@ body::before {
   line-height: 1; letter-spacing: .02em; color: var(--tx);
 }
 .ph-meta { padding-bottom: 4px }
-.ph-time { font-size: 11px; color: var(--tx3); font-family: var(--font-mono) }
+.ph-time { font-size: 13px; color: var(--tx2); font-family: var(--font-mono) }
 .ph-refresh {
-  margin-top: 4px; font-size: 11px; font-weight: 700; color: var(--pr);
+  margin-top: 4px; font-size: 13px; font-weight: 700; color: var(--pr);
   padding: 3px 8px; border-radius: var(--rf);
   border: 1px solid rgb(61 127 255 / .25); background: rgb(61 127 255 / .08);
   display: inline-block;
 }
 
-/* ── Chart ── */
+/*  Chart  */
 .chart-shell {
   border-radius: var(--rx); overflow: hidden;
   border: 1px solid var(--bor); height: 52vw; min-height: 260px; max-height: 360px;
 }
 
-/* ── Bias Card ── */
+/*  Bias Card  */
 .bias-card {
   border-radius: var(--rx); border: 1px solid var(--bor);
   background: var(--sur); overflow: hidden;
@@ -234,40 +234,40 @@ body::before {
 }
 .bias-dir-wrap { display: flex; align-items: center; gap: 12px }
 .bias-icon {
-  width: 48px; height: 48px; border-radius: 12px;
-  display: grid; place-items: center; font-size: 22px;
-  font-weight: 900; flex-shrink: 0;
+  width: 64px; height: 54px; border-radius: 12px;
+  display: grid; place-items: center; font-size: 14px;
+  font-weight: 900; flex-shrink: 0; letter-spacing: .02em;
 }
 .bias-card.buy  .bias-icon { background: var(--bu-dim); color: var(--bu) }
 .bias-card.sell .bias-icon { background: var(--se-dim); color: var(--se) }
 .bias-card.neutral .bias-icon { background: var(--sur2); color: var(--tx3) }
 .bias-dir {
-  font-family: var(--font-disp); font-size: 36px; letter-spacing: .04em; line-height: 1;
+  font-family: var(--font-ui); font-size: 28px; font-weight: 800; letter-spacing: .02em; line-height: 1;
 }
 .bias-card.buy  .bias-dir { color: var(--bu) }
 .bias-card.sell .bias-dir { color: var(--se) }
 .bias-card.neutral .bias-dir { color: var(--tx2) }
-.bias-label { font-size: 11px; color: var(--tx2); font-weight: 500; margin-top: 1px }
+.bias-label { font-size: 14px; color: var(--tx2); font-weight: 500; margin-top: 4px }
 .bias-right { text-align: right }
 .conf-num {
   font-family: var(--font-disp); font-size: 40px; line-height: 1; color: var(--tx);
 }
-.conf-label { font-size: 11px; color: var(--tx3); font-weight: 600; letter-spacing: .06em; text-transform: uppercase }
+.conf-label { font-size: 13px; color: var(--tx2); font-weight: 700; letter-spacing: .02em; text-transform: none }
 .bias-bottom { padding: 14px 20px; background: var(--sur2) }
 .tf-pills { display: flex; gap: 8px }
 .tf-pill {
-  flex: 1; padding: 8px; border-radius: 8px;
+  flex: 1; padding: 10px 8px; border-radius: 8px;
   border: 1px solid var(--bor); text-align: center;
-  font-size: 11px; font-weight: 700; letter-spacing: .04em;
+  font-size: 13px; font-weight: 700; letter-spacing: .02em;
   text-transform: uppercase;
 }
-.tf-pill .tf-frame { color: var(--tx3); display: block; margin-bottom: 2px }
-.tf-pill .tf-sig { font-size: 13px }
+.tf-pill .tf-frame { color: var(--tx2); display: block; margin-bottom: 3px }
+.tf-pill .tf-sig { font-size: 15px }
 .tf-pill.bull { border-color: var(--bu-bor); background: var(--bu-dim); color: var(--bu) }
 .tf-pill.bear { border-color: var(--se-bor); background: var(--se-dim); color: var(--se) }
 .tf-pill.neut { color: var(--tx2) }
 
-/* ── Prob Bars ── */
+/*  Prob Bars  */
 .prob-card {
   background: var(--sur); border: 1px solid var(--bor);
   border-radius: var(--rx); padding: 18px 20px;
@@ -275,19 +275,19 @@ body::before {
 }
 .prob-row { display: flex; flex-direction: column; gap: 8px }
 .prob-hdr { display: flex; justify-content: space-between; align-items: center }
-.prob-lbl { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase }
+.prob-lbl { font-size: 15px; font-weight: 700; letter-spacing: .02em; text-transform: none }
 .prob-lbl.b { color: var(--bu) }
 .prob-lbl.s { color: var(--se) }
 .prob-pct { font-family: var(--font-disp); font-size: 28px; line-height: 1 }
 .prob-pct.b { color: var(--bu) }
 .prob-pct.s { color: var(--se) }
-.bar-track { height: 6px; border-radius: var(--rf); background: var(--sur2); overflow: hidden }
+.bar-track { height: 10px; border-radius: var(--rf); background: var(--sur2); overflow: hidden }
 .bar-fill { height: 100%; border-radius: var(--rf); transition: width .7s cubic-bezier(.16,1,.3,1) }
 .bar-fill.b { background: linear-gradient(90deg, var(--bu) 0%, #69ffa8 100%) }
 .bar-fill.s { background: linear-gradient(90deg, var(--se) 0%, #ff8099 100%) }
 .prob-divider { height: 1px; background: var(--bor) }
 
-/* ── Setups ── */
+/*  Setups  */
 .setups-card {
   background: var(--sur); border: 1px solid var(--bor);
   border-radius: var(--rx); overflow: hidden;
@@ -296,8 +296,8 @@ body::before {
   padding: 14px 20px; border-bottom: 1px solid var(--bor);
   display: flex; align-items: center; justify-content: space-between;
 }
-.setups-title { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--tx3) }
-.live-dot-wrap { display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; color: var(--bu); letter-spacing: .06em; text-transform: uppercase }
+.setups-title { font-size: 14px; font-weight: 700; letter-spacing: .02em; color: var(--tx2) }
+.live-dot-wrap { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: var(--bu); letter-spacing: .02em; text-transform: uppercase }
 .live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--bu); animation: pulse 1.4s infinite }
 .setups-grid { display: grid; grid-template-columns: 1fr 1fr }
 .setup-col { padding: 16px; }
@@ -307,31 +307,32 @@ body::before {
   border-bottom: 1px solid var(--bor);
 }
 .setup-badge {
-  padding: 3px 10px; border-radius: var(--rf);
-  font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  padding: 5px 14px; border-radius: var(--rf);
+  font-size: 14px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
 }
 .setup-col.buy  .setup-badge { background: var(--bu-dim); color: var(--bu); border: 1px solid var(--bu-bor) }
+.setup-col.buy  { border-top: 3px solid var(--bu); background: linear-gradient(180deg, rgb(0 230 118 / .04) 0%, transparent 30%); }
 .setup-col.sell .setup-badge { background: var(--se-dim); color: var(--se); border: 1px solid var(--se-bor) }
-.setup-dir-tag { font-size: 10px; font-weight: 700; color: var(--tx3) }
+.setup-col.sell { border-top: 3px solid var(--se); background: linear-gradient(180deg, rgb(255 68 101 / .04) 0%, transparent 30%); }
+.setup-dir-tag { font-size: 13px; font-weight: 700; color: var(--tx2) }
 .lvl-row { padding: 7px 0; border-bottom: 1px solid var(--bor); display: flex; flex-direction: column; gap: 1px }
 .lvl-row:last-child { border-bottom: none; padding-bottom: 0 }
-.lvl-k { font-size: 10px; font-weight: 600; color: var(--tx3); text-transform: uppercase; letter-spacing: .05em }
-.lvl-v { font-family: var(--font-mono); font-size: 13px; font-weight: 600 }
+.lvl-k { font-size: 12px; font-weight: 600; color: var(--tx2); text-transform: none; letter-spacing: .01em }
+.lvl-v { font-family: var(--font-mono); font-size: 15px; font-weight: 700 }
 .lvl-v.entry { color: var(--pr) }
 .lvl-v.target { color: var(--bu) }
 .lvl-v.stop   { color: var(--se) }
-.setup-col.sell .lvl-v.target { color: var(--se) }
-.setup-col.sell .lvl-v.stop   { color: var(--bu) }
+/* sell targets = green (profit), sell stops = red (loss) — same as buy column for clarity */
 
-/* ── Indicators Grid ── */
+/*  Indicators Grid  */
 .ind-section {}
 .section-hdr {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 10px;
 }
 .section-label {
-  font-size: 11px; font-weight: 700; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--tx3);
+  font-size: 14px; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--tx2);
 }
 .ind-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px }
 @media (max-width: 360px) { .ind-grid { grid-template-columns: repeat(2,1fr) } }
@@ -345,15 +346,15 @@ body::before {
 .ind-card:hover { border-color: var(--bor2); background: var(--sur2) }
 .ind-card:active { transform: scale(.97) }
 .ind-top { display: flex; justify-content: space-between; align-items: flex-start }
-.ind-name { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--tx3) }
+.ind-name { font-size: 12px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; color: var(--tx2) }
 .ind-info { font-size: 11px; color: var(--tx3) }
-.ind-val { font-family: var(--font-mono); font-size: 16px; font-weight: 600; margin-top: 6px; line-height: 1 }
-.ind-sub { font-size: 10px; margin-top: 4px; font-weight: 600 }
+.ind-val { font-family: var(--font-mono); font-size: 18px; font-weight: 700; margin-top: 8px; line-height: 1 }
+.ind-sub { font-size: 12px; margin-top: 5px; font-weight: 600 }
 .ind-card .bull, .bull { color: var(--bu) }
 .ind-card .bear, .bear { color: var(--se) }
 .ind-card .neut, .neut { color: var(--tx2) }
 
-/* ── Sessions ── */
+/*  Sessions  */
 .sess-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
 .sess-card {
   background: var(--sur); border: 2px solid var(--bor);
@@ -361,11 +362,11 @@ body::before {
   transition: border-color .2s;
 }
 .sess-card.active { border-color: var(--pr); background: var(--pr-glow) }
-.sess-name { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--pr) }
+.sess-name { font-size: 13px; font-weight: 700; letter-spacing: .02em; color: var(--pr) }
 .sess-status { font-size: 14px; font-weight: 700; margin-top: 4px }
-.sess-time { font-size: 10px; color: var(--tx3); margin-top: 2px; font-family: var(--font-mono) }
+.sess-time { font-size: 12px; color: var(--tx2); margin-top: 3px; font-family: var(--font-mono) }
 
-/* ── News ── */
+/*  News  */
 .news-list { display: flex; flex-direction: column; gap: 8px }
 .news-card {
   display: flex; flex-direction: column; gap: 6px;
@@ -375,8 +376,8 @@ body::before {
 }
 .news-card:hover { border-color: var(--bor2) }
 .news-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap }
-.news-src { font-size: 10px; font-weight: 800; color: var(--pr); letter-spacing: .07em; text-transform: uppercase }
-.news-age { font-size: 10px; color: var(--tx3) }
+.news-src { font-size: 12px; font-weight: 800; color: var(--pr); letter-spacing: .02em; text-transform: uppercase }
+.news-age { font-size: 12px; color: var(--tx2) }
 .news-sent {
   font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: var(--rf);
   margin-left: auto;
@@ -384,23 +385,23 @@ body::before {
 .news-sent.bull { background: var(--bu-dim); color: var(--bu) }
 .news-sent.bear { background: var(--se-dim); color: var(--se) }
 .news-sent.neut { background: var(--sur2); color: var(--tx3) }
-.news-title { font-size: 13px; font-weight: 500; line-height: 1.5; color: var(--tx2) }
+.news-title { font-size: 15px; font-weight: 500; line-height: 1.6; color: var(--tx) }
 .news-empty { text-align: center; color: var(--tx3); padding: 24px; font-size: 13px }
 
-/* ── Why button ── */
+/*  Why button  */
 .why-btn {
   width: 100%; padding: 14px 20px;
   border-radius: var(--rx); border: 1px solid var(--bor);
   background: var(--sur); color: var(--tx2);
-  font-size: 13px; font-weight: 600;
+  font-size: 15px; font-weight: 600;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   transition: color .15s, border-color .15s, background .15s;
 }
 .why-btn:hover { color: var(--tx); border-color: var(--pr); background: var(--pr-glow) }
 
-/* ═══════════════════════════════════════════
+/* 
    MODALS
-═══════════════════════════════════════════ */
+ */
 .modal-overlay {
   position: fixed; inset: 0; background: rgb(0 0 0 / .75);
   display: none; align-items: flex-end; justify-content: center;
@@ -416,8 +417,8 @@ body::before {
 }
 .modal-drag { width: 40px; height: 4px; border-radius: var(--rf); background: var(--bor2); margin: 12px auto 0 }
 .modal-hdr { padding: 16px 20px 14px; border-bottom: 1px solid var(--bor) }
-.modal-title { font-size: 16px; font-weight: 700 }
-.modal-sub { font-size: 12px; color: var(--tx3); margin-top: 2px }
+.modal-title { font-size: 18px; font-weight: 700 }
+.modal-sub { font-size: 14px; color: var(--tx2); margin-top: 4px }
 .modal-body { padding: 16px 20px 32px }
 .reason-block {
   padding: 12px 14px; border-radius: var(--r);
@@ -439,9 +440,9 @@ body::before {
 .ie-dot.bull { background: var(--bu) }
 .ie-dot.bear { background: var(--se) }
 .ie-dot.neut { background: var(--tx3) }
-.ie-key { font-size: 12px; color: var(--tx3); font-weight: 600; flex: 1 }
-.ie-val { font-family: var(--font-mono); font-size: 14px; font-weight: 600 }
-.ie-desc { font-size: 12px; line-height: 1.6; color: var(--tx2); margin-top: 12px; padding: 12px; background: var(--sur2); border-radius: 8px }
+.ie-key { font-size: 14px; color: var(--tx2); font-weight: 600; flex: 1 }
+.ie-val { font-family: var(--font-mono); font-size: 16px; font-weight: 700 }
+.ie-desc { font-size: 14px; line-height: 1.75; color: var(--tx2); margin-top: 12px; padding: 14px; background: var(--sur2); border-radius: 8px }
 .ie-signal {
   margin-top: 10px; padding: 10px 14px; border-radius: 8px;
   font-size: 12px; font-weight: 700;
@@ -450,9 +451,9 @@ body::before {
 .ie-signal.bear { background: var(--se-dim); color: var(--se); border: 1px solid var(--se-bor) }
 .ie-signal.neut { background: var(--sur2); color: var(--tx2); border: 1px solid var(--bor) }
 
-/* ═══════════════════════════════════════════
+/* 
    ANIMATIONS
-═══════════════════════════════════════════ */
+ */
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
 @keyframes spin { to { transform: rotate(360deg) } }
 @keyframes slideUp { from { transform: translateY(100%) } to { transform: translateY(0) } }
@@ -471,14 +472,14 @@ body::before {
 <body>
 <div class="app">
 
-<!-- ══════════════════════════════════════════════
+<!-- 
      HOME
-══════════════════════════════════════════════ -->
+ -->
 <div class="screen on" id="sHome">
   <div class="home-wrap">
     <div class="home-header">
-      <div class="home-logo">ScalperPro</div>
-      <div class="home-sub">Real-Time Market Intelligence</div>
+      <div class="home-logo">Scalper_Pro</div>
+      <div class="home-sub">Live Prices &amp; Buy/Sell Signals</div>
     </div>
 
     <div class="home-markets">
@@ -486,7 +487,7 @@ body::before {
         <div class="mc-glow"></div>
         <div class="mc-left">
           <div class="mc-sym">₿ BTC</div>
-          <div class="mc-name">Bitcoin · USDT · Binance</div>
+          <div class="mc-name">Bitcoin (Crypto) — Live on Binance</div>
         </div>
         <div class="mc-arrow">→</div>
       </button>
@@ -494,8 +495,8 @@ body::before {
       <button class="mkt-card gold" onclick="openMkt('gold')">
         <div class="mc-glow"></div>
         <div class="mc-left">
-          <div class="mc-sym">◈ XAU</div>
-          <div class="mc-name">Gold · USD · Spot</div>
+          <div class="mc-sym"> XAU</div>
+          <div class="mc-name">Gold — Live Spot Price</div>
         </div>
         <div class="mc-arrow">→</div>
       </button>
@@ -503,26 +504,26 @@ body::before {
       <button class="mkt-card silver" onclick="openMkt('silver')">
         <div class="mc-glow"></div>
         <div class="mc-left">
-          <div class="mc-sym">◇ XAG</div>
-          <div class="mc-name">Silver · USD · Spot</div>
+          <div class="mc-sym"> XAG</div>
+          <div class="mc-name">Silver — Live Spot Price</div>
         </div>
         <div class="mc-arrow">→</div>
       </button>
     </div>
 
-    <div class="home-footer">IST timezone · Auto-refreshes · Multi-timeframe analysis</div>
+    <div class="home-footer">India time (IST) — Prices refresh automatically</div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════
+<!-- 
      DASHBOARD
-══════════════════════════════════════════════ -->
+ -->
 <div class="screen" id="sDash">
 
   <div class="topbar">
     <button class="back-btn" onclick="goHome()">← Markets</button>
     <div class="topbar-actions">
-      <button class="icon-btn" title="Toggle Theme" onclick="toggleTheme()">◑</button>
+      <button class="icon-btn" title="Toggle Theme" onclick="toggleTheme()"></button>
     </div>
   </div>
 
@@ -558,21 +559,21 @@ body::before {
         </div>
         <div class="bias-right">
           <div class="conf-num" id="confNum">--</div>
-          <div class="conf-label">Confidence</div>
+          <div class="conf-label">Signal Strength</div>
         </div>
       </div>
       <div class="bias-bottom">
         <div class="tf-pills">
           <div class="tf-pill neut" id="tf5">
-            <span class="tf-frame">5m</span>
+            <span class="tf-frame">5 min</span>
             <span class="tf-sig">--</span>
           </div>
           <div class="tf-pill neut" id="tf15">
-            <span class="tf-frame">15m</span>
+            <span class="tf-frame">15 min</span>
             <span class="tf-sig">--</span>
           </div>
           <div class="tf-pill neut" id="tf1h">
-            <span class="tf-frame">1H</span>
+            <span class="tf-frame">1 Hour</span>
             <span class="tf-sig">--</span>
           </div>
         </div>
@@ -583,7 +584,7 @@ body::before {
     <div class="prob-card">
       <div class="prob-row">
         <div class="prob-hdr">
-          <span class="prob-lbl b">▲ Buy Probability</span>
+          <span class="prob-lbl b"> Buy Probability</span>
           <span class="prob-pct b" id="buyPct">--</span>
         </div>
         <div class="bar-track"><div class="bar-fill b" id="buyBar" style="width:50%"></div></div>
@@ -591,7 +592,7 @@ body::before {
       <div class="prob-divider"></div>
       <div class="prob-row">
         <div class="prob-hdr">
-          <span class="prob-lbl s">▼ Sell Probability</span>
+          <span class="prob-lbl s"> Sell Probability</span>
           <span class="prob-pct s" id="sellPct">--</span>
         </div>
         <div class="bar-track"><div class="bar-fill s" id="sellBar" style="width:50%"></div></div>
@@ -601,31 +602,31 @@ body::before {
     <!-- Setups -->
     <div class="setups-card">
       <div class="setups-header">
-        <span class="setups-title">Trade Setups · Entry &amp; Exit Levels</span>
+        <span class="setups-title">Where to Buy &amp; Where to Sell</span>
         <span class="live-dot-wrap"><span class="live-dot"></span>Live</span>
       </div>
       <div class="setups-grid">
         <div class="setup-col buy">
           <div class="setup-col-header">
-            <span class="setup-badge">Buy</span>
-            <span class="setup-dir-tag">▲ LONG</span>
+            <span class="setup-badge">BUY</span>
+            <span class="setup-dir-tag"> LONG</span>
           </div>
-          <div class="lvl-row"><div class="lvl-k">Entry ↓</div><div class="lvl-v entry" id="bEntry">--</div></div>
-          <div class="lvl-row"><div class="lvl-k">Target 1</div><div class="lvl-v target" id="bT1">--</div></div>
-          <div class="lvl-row"><div class="lvl-k">Target 2</div><div class="lvl-v target" id="bT2">--</div></div>
-          <div class="lvl-row"><div class="lvl-k">Stop 1</div><div class="lvl-v stop" id="bS1">--</div></div>
-          <div class="lvl-row"><div class="lvl-k">Stop 2</div><div class="lvl-v stop" id="bS2">--</div></div>
+          <div class="lvl-row"><div class="lvl-k">Buy at Price</div><div class="lvl-v entry" id="bEntry">--</div></div>
+          <div class="lvl-row"><div class="lvl-k">Take Profit 1</div><div class="lvl-v target" id="bT1">--</div></div>
+          <div class="lvl-row"><div class="lvl-k">Take Profit 2</div><div class="lvl-v target" id="bT2">--</div></div>
+          <div class="lvl-row"><div class="lvl-k">Stop Loss 1</div><div class="lvl-v stop" id="bS1">--</div></div>
+          <div class="lvl-row"><div class="lvl-k">Stop Loss 2</div><div class="lvl-v stop" id="bS2">--</div></div>
         </div>
         <div class="setup-col sell">
           <div class="setup-col-header">
-            <span class="setup-badge">Sell</span>
-            <span class="setup-dir-tag">▼ SHORT</span>
+            <span class="setup-badge">SELL</span>
+            <span class="setup-dir-tag"> SHORT</span>
           </div>
-          <div class="lvl-row"><div class="lvl-k">Entry ↑</div><div class="lvl-v entry" id="sEntry">--</div></div>
-          <div class="lvl-row"><div class="lvl-k">Target 1</div><div class="lvl-v target" id="sT1">--</div></div>
-          <div class="lvl-row"><div class="lvl-k">Target 2</div><div class="lvl-v target" id="sT2">--</div></div>
-          <div class="lvl-row"><div class="lvl-k">Stop 1</div><div class="lvl-v stop" id="sS1">--</div></div>
-          <div class="lvl-row"><div class="lvl-k">Stop 2</div><div class="lvl-v stop" id="sS2">--</div></div>
+          <div class="lvl-row"><div class="lvl-k">Sell at Price</div><div class="lvl-v entry" id="sEntry">--</div></div>
+          <div class="lvl-row"><div class="lvl-k">Take Profit 1</div><div class="lvl-v target" id="sT1">--</div></div>
+          <div class="lvl-row"><div class="lvl-k">Take Profit 2</div><div class="lvl-v target" id="sT2">--</div></div>
+          <div class="lvl-row"><div class="lvl-k">Stop Loss 1</div><div class="lvl-v stop" id="sS1">--</div></div>
+          <div class="lvl-row"><div class="lvl-k">Stop Loss 2</div><div class="lvl-v stop" id="sS2">--</div></div>
         </div>
       </div>
     </div>
@@ -633,52 +634,52 @@ body::before {
     <!-- Key Indicators -->
     <div class="ind-section">
       <div class="section-hdr">
-        <div class="section-label">Key Indicators</div>
-        <div style="font-size:10px;color:var(--tx3)">Tap any indicator to learn more</div>
+        <div class="section-label">Market Signals</div>
+        <div style="font-size:13px;color:var(--tx2);font-weight:500">Tap any card to learn more</div>
       </div>
       <div class="ind-grid">
         <div class="ind-card" onclick="showIndModal('rsi14')" id="ic-rsi14">
-          <div class="ind-top"><div class="ind-name">RSI 14</div><div class="ind-info">ⓘ</div></div>
+          <div class="ind-top"><div class="ind-name">RSI 14</div><div class="ind-info"></div></div>
           <div class="ind-val" id="iRsi">--</div>
           <div class="ind-sub neut" id="iRsiSub">15m candles</div>
         </div>
         <div class="ind-card" onclick="showIndModal('rsi7')" id="ic-rsi7">
-          <div class="ind-top"><div class="ind-name">RSI 7</div><div class="ind-info">ⓘ</div></div>
+          <div class="ind-top"><div class="ind-name">RSI 7</div><div class="ind-info"></div></div>
           <div class="ind-val" id="iRsi7">--</div>
           <div class="ind-sub neut" id="iRsi7Sub">Fast signal</div>
         </div>
         <div class="ind-card" onclick="showIndModal('macd')" id="ic-macd">
-          <div class="ind-top"><div class="ind-name">MACD</div><div class="ind-info">ⓘ</div></div>
+          <div class="ind-top"><div class="ind-name">MACD</div><div class="ind-info"></div></div>
           <div class="ind-val" id="iMacd">--</div>
           <div class="ind-sub neut" id="iMacdSub">15m histogram</div>
         </div>
         <div class="ind-card" onclick="showIndModal('bb')" id="ic-bb">
-          <div class="ind-top"><div class="ind-name">Bollinger</div><div class="ind-info">ⓘ</div></div>
+          <div class="ind-top"><div class="ind-name">Bollinger</div><div class="ind-info"></div></div>
           <div class="ind-val" id="iBb">--</div>
           <div class="ind-sub neut" id="iBbSub">Band position</div>
         </div>
         <div class="ind-card" onclick="showIndModal('atr')" id="ic-atr">
-          <div class="ind-top"><div class="ind-name">ATR</div><div class="ind-info">ⓘ</div></div>
+          <div class="ind-top"><div class="ind-name">ATR</div><div class="ind-info"></div></div>
           <div class="ind-val" id="iAtr">--</div>
           <div class="ind-sub neut">Volatility</div>
         </div>
         <div class="ind-card" onclick="showIndModal('vol')" id="ic-vol">
-          <div class="ind-top"><div class="ind-name">Volume</div><div class="ind-info">ⓘ</div></div>
+          <div class="ind-top"><div class="ind-name">Volume</div><div class="ind-info"></div></div>
           <div class="ind-val" id="iVol">--</div>
           <div class="ind-sub neut" id="iVolSub">vs 20-bar avg</div>
         </div>
         <div class="ind-card" onclick="showIndModal('ema9')" id="ic-ema9">
-          <div class="ind-top"><div class="ind-name">EMA 9/21</div><div class="ind-info">ⓘ</div></div>
+          <div class="ind-top"><div class="ind-name">EMA 9/21</div><div class="ind-info"></div></div>
           <div class="ind-val" id="iEma">--</div>
           <div class="ind-sub neut" id="iEmaSub">Short trend</div>
         </div>
         <div class="ind-card" onclick="showIndModal('ema50')" id="ic-ema50">
-          <div class="ind-top"><div class="ind-name">EMA 50/200</div><div class="ind-info">ⓘ</div></div>
+          <div class="ind-top"><div class="ind-name">EMA 50/200</div><div class="ind-info"></div></div>
           <div class="ind-val" id="iEma2">--</div>
           <div class="ind-sub neut" id="iEma2Sub">Long trend</div>
         </div>
         <div class="ind-card" onclick="showIndModal('sess')" id="ic-sess">
-          <div class="ind-top"><div class="ind-name">Session</div><div class="ind-info">ⓘ</div></div>
+          <div class="ind-top"><div class="ind-name">Session</div><div class="ind-info"></div></div>
           <div class="ind-val" id="iSess">--</div>
           <div class="ind-sub neut" id="iSessSub">Market overlap</div>
         </div>
@@ -688,7 +689,7 @@ body::before {
     <!-- Sessions -->
     <div class="ind-section">
       <div class="section-hdr">
-        <div class="section-label" id="sessLabel">Market Sessions · IST</div>
+        <div class="section-label" id="sessLabel">Active Markets Right Now (IST)</div>
       </div>
       <div class="sess-grid" id="sessGrid"></div>
     </div>
@@ -696,37 +697,37 @@ body::before {
     <!-- News (BTC only) -->
     <div id="newsSection" style="display:none">
       <div class="section-hdr">
-        <div class="section-label">Crypto News</div>
+        <div class="section-label">Latest Crypto News</div>
         <button class="ph-refresh" onclick="fetchNews()" style="margin:0">↻ Refresh</button>
       </div>
       <div class="news-list" id="newsGrid"><div class="news-empty">Loading…</div></div>
     </div>
 
     <!-- Why -->
-    <button class="why-btn" onclick="openWhy()">💡 Why this setup? See full reasoning</button>
+    <button class="why-btn" onclick="openWhy()"> Why is it saying Buy or Sell? Tap to understand</button>
 
   </div>
 </div><!-- /sDash -->
 
 </div><!-- /app -->
 
-<!-- ══════════════════════════════════════════════
+<!-- 
      WHY MODAL
-══════════════════════════════════════════════ -->
+ -->
 <div class="modal-overlay" id="whyModal" onclick="if(event.target===this)closeWhy()">
   <div class="modal">
     <div class="modal-drag"></div>
     <div class="modal-hdr">
-      <div class="modal-title">Analysis Reasoning</div>
-      <div class="modal-sub">All signals used to generate the current bias</div>
+      <div class="modal-title">Why This Signal?</div>
+      <div class="modal-sub">Here is what the app looked at to decide Buy or Sell</div>
     </div>
     <div class="modal-body" id="whyContent"></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════
+<!-- 
      INDICATOR EXPLAIN MODAL
-══════════════════════════════════════════════ -->
+ -->
 <div class="modal-overlay" id="indModal" onclick="if(event.target===this)closeIndModal()">
   <div class="modal">
     <div class="modal-drag"></div>
@@ -742,9 +743,9 @@ body::before {
 <script>
 'use strict';
 
-// ═══════════════════════════════════════════════════════════════
+// 
 // CONFIG
-// ═══════════════════════════════════════════════════════════════
+// 
 const TD_KEY = '275e40dff5c2433c81079c6b212660dc';
 
 const SESSIONS = {
@@ -757,14 +758,14 @@ const SESSIONS = {
     {id:'au',  name:'Sydney',         o:22,   c:5,   w:2},
   ],
   gold: [
-    {id:'uk',  name:'🔥 London Open', o:8,    c:16,  w:8},
-    {id:'us',  name:'🔥 NY Open',     o:13.5, c:20,  w:8},
+    {id:'uk',  name:'London Open', o:8,    c:16,  w:8},
+    {id:'us',  name:'NY Open',     o:13.5, c:20,  w:8},
     {id:'eu',  name:'EU Overlap',     o:7,    c:15,  w:5},
     {id:'jp',  name:'Tokyo',          o:0,    c:6,   w:2},
   ],
   silver: [
-    {id:'uk',  name:'🔥 London Open', o:8,    c:16,  w:8},
-    {id:'us',  name:'🔥 NY Open',     o:13.5, c:20,  w:8},
+    {id:'uk',  name:'London Open', o:8,    c:16,  w:8},
+    {id:'us',  name:'NY Open',     o:13.5, c:20,  w:8},
     {id:'eu',  name:'EU Overlap',     o:7,    c:15,  w:5},
     {id:'jp',  name:'Tokyo',          o:0,    c:6,   w:2},
   ],
@@ -774,9 +775,9 @@ const CHART_SYM = {btc:'BINANCE:BTCUSDT', gold:'OANDA:XAUUSD', silver:'OANDA:XAG
 const DP        = {btc:2, gold:2, silver:3};
 const REFRESH   = {btc:30000, gold:60000, silver:60000};
 
-// ═══════════════════════════════════════════════════════════════
+// 
 // STATE
-// ═══════════════════════════════════════════════════════════════
+// 
 let CUR = null;
 let TIMERS = {price:null, sess:null};
 let CHART_READY = false;
@@ -784,9 +785,9 @@ let FETCHING = false;
 let LAST_ANALYSIS = null;
 let KCACHE = {};
 
-// ═══════════════════════════════════════════════════════════════
+// 
 // HELPERS
-// ═══════════════════════════════════════════════════════════════
+// 
 const $ = id => document.getElementById(id);
 const clamp = (n,a,b) => Math.min(b, Math.max(a, n));
 const fmtN = (v, dp=2) => Number.isFinite(+v)
@@ -814,15 +815,46 @@ function diffTxt(ms) {
   return `${s}s`;
 }
 
-// ═══════════════════════════════════════════════════════════════
+// 
 // NAVIGATION
-// ═══════════════════════════════════════════════════════════════
+// 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
   $(id).classList.add('on');
 }
 
+let _pendingMkt = null;
+
+function isWeekend() {
+  // Use UTC day — forex/metals market closed Sat 22:00 UTC to Sun 22:00 UTC
+  // Simplified: closed all day Saturday (UTC) and Sunday (UTC) for user clarity
+  const d = new Date();
+  const day = d.getUTCDay(); // 0=Sun, 6=Sat
+  return day === 0 || day === 6;
+}
+
+function closeWeekendModal() {
+  $('weekendModal').classList.remove('open');
+  _pendingMkt = null;
+}
+
+async function continueWeekend() {
+  $('weekendModal').classList.remove('open');
+  const mkt = _pendingMkt;
+  _pendingMkt = null;
+  await _doOpenMkt(mkt);
+}
+
 async function openMkt(mkt) {
+  if((mkt === 'gold' || mkt === 'silver') && isWeekend()) {
+    _pendingMkt = mkt;
+    $('weekendModal').classList.add('open');
+    return;
+  }
+  await _doOpenMkt(mkt);
+}
+
+async function _doOpenMkt(mkt) {
   CUR = mkt;
   FETCHING = false;
   KCACHE = {};
@@ -857,9 +889,9 @@ function goHome() {
 
 function manualRefresh() { if(CUR) refresh(); }
 
-// ═══════════════════════════════════════════════════════════════
+// 
 // THEME
-// ═══════════════════════════════════════════════════════════════
+// 
 function toggleTheme() {
   const r = document.documentElement;
   const next = r.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -867,9 +899,9 @@ function toggleTheme() {
   if(CUR) { $('chartWrap').innerHTML = ''; CHART_READY = false; mountChart(CUR); }
 }
 
-// ═══════════════════════════════════════════════════════════════
+// 
 // CHART
-// ═══════════════════════════════════════════════════════════════
+// 
 function mountChart(mkt) {
   if(CHART_READY || !window.TradingView) return;
   CHART_READY = true;
@@ -883,9 +915,9 @@ function mountChart(mkt) {
   });
 }
 
-// ═══════════════════════════════════════════════════════════════
+// 
 // SESSIONS
-// ═══════════════════════════════════════════════════════════════
+// 
 function buildSessions(mkt) {
   const cfg = SESSIONS[mkt];
   const h = utcH();
@@ -932,9 +964,9 @@ function buildSessions(mkt) {
   return scoreW / totalW;
 }
 
-// ═══════════════════════════════════════════════════════════════
+// 
 // PRICE FETCHING
-// ═══════════════════════════════════════════════════════════════
+// 
 async function fetchBTCPrice() {
   const r = await fetchwt('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
   if(!r.ok) throw new Error('Binance error');
@@ -953,9 +985,9 @@ async function fetchMetalPrice(metal) {
   throw new Error(`${metal} price unavailable`);
 }
 
-// ═══════════════════════════════════════════════════════════════
+// 
 // KLINES
-// ═══════════════════════════════════════════════════════════════
+// 
 async function getBTCKlines(interval, limit=200) {
   const key = `btc_${interval}`;
   const now = Date.now();
@@ -986,9 +1018,9 @@ async function getMetalKlines(metal, interval, size=120) {
   return silverKl;
 }
 
-// ═══════════════════════════════════════════════════════════════
+// 
 // MATH
-// ═══════════════════════════════════════════════════════════════
+// 
 function ema(arr, p) {
   const k = 2/(p+1); let e = arr[0];
   for(let i=1;i<arr.length;i++) e = arr[i]*k + e*(1-k);
@@ -1107,16 +1139,10 @@ function buildSetup(entry, side, allRes, allSup, bATR) {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
+// 
 // ALGO
-// ═══════════════════════════════════════════════════════════════
-async function runAlgo(mkt, price, sessScore) {
-  let k5,k15,k1h;
-  if(mkt==='btc'){
-    [k5,k15,k1h]=await Promise.all([getBTCKlines('5m',200),getBTCKlines('15m',200),getBTCKlines('1h',200)]);
-  } else {
-    [k5,k15,k1h]=await Promise.all([getMetalKlines(mkt,'5min',120),getMetalKlines(mkt,'15min',120),getMetalKlines(mkt,'1h',100)]);
-  }
+// 
+async function runAlgoBTC(price, sessScore, k5, k15, k1h) {
   const c5=k5.map(k=>k[4]),c15=k15.map(k=>k[4]),c1h=k1h.map(k=>k[4]);
   const rsi5_14=rsi(c5,14),rsi15_14=rsi(c15,14),rsi15_7=rsi(c15,7),rsi1h_14=rsi(c1h,14);
   const macd5=macd(c5),macd15=macd(c15),macd1h=macd(c1h);
@@ -1126,6 +1152,7 @@ async function runAlgo(mkt, price, sessScore) {
   const vr5=volRatio(k5),vr15=volRatio(k15);
   const es5=emaStack(c5),es15=emaStack(c15),es1h=emaStack(c1h);
 
+  // BTC algo: 5m/15m/1h scalper focus, volume matters, momentum driven
   const trendScore=es5.score*0.20+es15.score*0.40+es1h.score*0.40;
   const rsiScore=(rsi5_14-50)/50*0.15+(rsi15_14-50)/50*0.40+(rsi1h_14-50)/50*0.45;
   const ms5=macd5.hist>0?1:macd5.hist<0?-1:0,ms15=macd15.hist>0?1:macd15.hist<0?-1:0,ms1h=macd1h.hist>0?1:macd1h.hist<0?-1:0;
@@ -1134,7 +1161,8 @@ async function runAlgo(mkt, price, sessScore) {
   const bbScore=(bb15.pct-0.5)*2*0.5+(bb1h.pct-0.5)*2*0.5;
   const volScore=(vr15>1.2?0.3:vr15>1.0?0.1:vr15<0.7?-0.1:0)+(vr5>1.3?0.2:0);
   const sessS=(sessScore-0.5)*0.3;
-  const raw=trendScore*0.40+rsiScore*0.25+macdScore*0.15+bbScore*0.10+sessS*0.10;
+  // BTC weights: trend 35%, rsi 22%, macd 15%, bb 10%, volume 10%, session 8%
+  const raw=trendScore*0.35+rsiScore*0.22+macdScore*0.15+bbScore*0.10+volScore*0.10+sessS*0.08;
   const bias=Math.tanh(raw*2.5)*45;
   let buy=Math.round(clamp(50+bias,5,95)),sell=100-buy;
 
@@ -1150,34 +1178,138 @@ async function runAlgo(mkt, price, sessScore) {
   const {res:r1h,sup:s1h}=swingLevels(k1h,price,80,3);
   const allRes=[...new Set([...r15,...r1h])].sort((a,b)=>a-b);
   const allSup=[...new Set([...s15,...s1h])].sort((a,b)=>b-a);
-
   const buyEntry=calcEntry(price,k5,k15,k1h,a15,a1h,'buy');
   const sellEntry=calcEntry(price,k5,k15,k1h,a15,a1h,'sell');
   const buySetup=buildSetup(buyEntry,'buy',allRes,allSup,bATR);
   const sellSetup=buildSetup(sellEntry,'sell',allRes,allSup,bATR);
 
   const reasons=[
-    `<strong>EMA Trend Stack</strong> — 5m: ${es5.aligned?'🟢 Fully Bullish':es5.bearAligned?'🔴 Fully Bearish':'⚪ Mixed'} · 15m: ${es15.aligned?'🟢 Fully Bullish':es15.bearAligned?'🔴 Fully Bearish':'⚪ Mixed'} · 1h: ${es1h.aligned?'🟢 Fully Bullish':es1h.bearAligned?'🔴 Fully Bearish':'⚪ Mixed'}. ${allAligned?'All timeframes aligned — strong directional conviction.':'Timeframes mixed — lower conviction signal.'}`,
-    `<strong>RSI Momentum</strong> — 5m: ${rsi5_14.toFixed(0)} · 15m: ${rsi15_14.toFixed(0)} (fast RSI-7: ${rsi15_7.toFixed(0)}) · 1h: ${rsi1h_14.toFixed(0)}. ${rsi15_14<35?'15m oversold — bullish bias':rsi15_14>65?'15m overbought — bearish bias':rsi1h_14<35?'1h oversold — bullish long-term bias':rsi1h_14>65?'1h overbought — bearish long-term bias':'RSI neutral across all timeframes.'}`,
-    `<strong>MACD Histogram</strong> — 15m: ${macd15.hist>0?'+':''}${macd15.hist.toFixed(4)} ${macd15.hist>0?'▲ Bullish':'▼ Bearish'}${macdXo15!==0?' ⚡ Crossover this bar':''} · 1h: ${macd1h.hist>0?'+':''}${macd1h.hist.toFixed(4)} ${macd1h.hist>0?'▲':'▼'}.`,
-    `<strong>Bollinger Bands (15m)</strong> — Price sits at ${(bb15.pct*100).toFixed(0)}% of the band range. ${bb15.pct<0.15?'Near the lower band → potential bounce zone':bb15.pct>0.85?'Near the upper band → potential rejection zone':'Price is in the mid-band area, no extreme signal.'}`,
-    `<strong>Volume Analysis</strong> — 5m ratio: ${vr5.toFixed(2)}x · 15m ratio: ${vr15.toFixed(2)}x. ${vr15>1.2?'Above-average volume confirms the current move.':vr15<0.7?'Low volume — treat any setup with extra caution.':'Volume is within normal range.'}`,
-    `<strong>Volatility (ATR)</strong> — Blended ATR: ${fmtN(bATR,2)} (5m: ${fmtN(a5,2)} · 15m: ${fmtN(a15,2)} · 1h: ${fmtN(a1h,2)}). Targets and stops are anchored to real swing support/resistance, not fixed ATR multiples.`,
-    `<strong>Sessions &amp; Entries</strong> — Session activity score: ${(sessScore*100).toFixed(0)}%. BUY entry: ${fmtN(buyEntry,DP[CUR]||2)} (${allSup.length?'near swing support':'ATR-based estimate'}) · SELL entry: ${fmtN(sellEntry,DP[CUR]||2)} (${allRes.length?'near swing resistance':'ATR-based estimate'}).`,
+    `<strong>Trend (EMA Stack)</strong> — 5m: ${es5.aligned?'Fully Bullish':es5.bearAligned?'Fully Bearish':'Mixed'} · 15m: ${es15.aligned?'Fully Bullish':es15.bearAligned?'Fully Bearish':'Mixed'} · 1h: ${es1h.aligned?'Fully Bullish':es1h.bearAligned?'Fully Bearish':'Mixed'}. ${allAligned?'All timeframes agree — strong signal.':'Timeframes mixed — weaker signal.'}`,
+    `<strong>RSI Momentum</strong> — 5m: ${rsi5_14.toFixed(0)} · 15m: ${rsi15_14.toFixed(0)} (fast RSI-7: ${rsi15_7.toFixed(0)}) · 1h: ${rsi1h_14.toFixed(0)}. ${rsi15_14<35?'15m oversold — buy signal':rsi15_14>65?'15m overbought — sell signal':rsi1h_14<35?'1h oversold — bullish long-term':rsi1h_14>65?'1h overbought — bearish long-term':'RSI neutral.'}`,
+    `<strong>MACD Momentum</strong> — 15m histogram: ${macd15.hist>0?'+':''}${macd15.hist.toFixed(4)} ${macd15.hist>0?'(Bullish)':'(Bearish)'}${macdXo15!==0?' — Crossover this bar!':''} · 1h: ${macd1h.hist>0?'+':''}${macd1h.hist.toFixed(4)} ${macd1h.hist>0?'Bullish':'Bearish'}.`,
+    `<strong>Bollinger Bands (15m)</strong> — Price is at ${(bb15.pct*100).toFixed(0)}% of the band range. ${bb15.pct<0.15?'Near the lower band — potential bounce':bb15.pct>0.85?'Near the upper band — potential reversal':'Price is in the middle area.'}`,
+    `<strong>Volume</strong> — 5m: ${vr5.toFixed(2)}x average · 15m: ${vr15.toFixed(2)}x average. ${vr15>1.2?'Above average — confirms the move.':vr15<0.7?'Low volume — be extra careful.':'Normal volume.'}`,
+    `<strong>Volatility (ATR)</strong> — Blended ATR: ${fmtN(bATR,2)}. Stops and targets are based on real support and resistance levels.`,
+    `<strong>Session Activity</strong> — Score: ${(sessScore*100).toFixed(0)}%. BUY entry near: ${fmtN(buyEntry,DP[CUR]||2)} · SELL entry near: ${fmtN(sellEntry,DP[CUR]||2)}.`,
   ];
-
-  return {
-    buy,sell,conf,clarity,dominant,bATR,buySetup,sellSetup,
-    rsi5_14,rsi15_14,rsi15_7,rsi1h_14,
-    macd15,macd1h,bb15,vr15,vr5,es5,es15,es1h,
-    a5,a15,a1h,sessScore,reasons,
-    macdXo15,ms5,ms15,ms1h,
-  };
+  return {buy,sell,conf,clarity,dominant,bATR,buySetup,sellSetup,rsi5_14,rsi15_14,rsi15_7,rsi1h_14,macd15,macd1h,bb15,vr15,vr5,es5,es15,es1h,a5,a15,a1h,sessScore,reasons,macdXo15,ms5,ms15,ms1h};
 }
 
-// ═══════════════════════════════════════════════════════════════
+async function runAlgoMetal(mkt, price, sessScore, k15, k1h) {
+  // GOLD / SILVER algo: session-driven, slower indicators, no volume, 15m & 1h focus
+  // Metals: overbought = 70 (not 65), oversold = 30, session score weighted heavily
+  // No 5m klines used for signal (metals 5m is noisy/sparse), focus on 15m + 1h
+  const c15=k15.map(k=>k[4]),c1h=k1h.map(k=>k[4]);
+
+  // RSI — metals use standard 14-period but on 15m + 1h only
+  const rsi15_14=rsi(c15,14),rsi15_7=rsi(c15,7),rsi1h_14=rsi(c1h,14);
+  const rsi5_14=rsi15_14; // alias for shared renderAlgo
+
+  // MACD — metals use slower periods (not standard 12/26/9, use 15/30/9 for metals)
+  function macdMetal(closes) {
+    const k15m=2/16,k30m=2/31,k9m=2/10;
+    let e15=closes[0],e30=closes[0];
+    const fast=[],slow=[];
+    for(let i=0;i<closes.length;i++){
+      e15=closes[i]*k15m+e15*(1-k15m);
+      e30=closes[i]*k30m+e30*(1-k30m);
+      fast.push(e15); slow.push(e30);
+    }
+    const line=fast.map((v,i)=>v-slow[i]);
+    let sig=line[0];
+    const hist=line.map(v=>{ sig=v*k9m+sig*(1-k9m); return v-sig; });
+    const last=hist.length-1;
+    return {line:line[last],signal:sig,hist:hist[last],prevHist:hist[last-1]||0};
+  }
+  const macd15=macdMetal(c15),macd1h=macdMetal(c1h);
+  const macd5=macd15; // alias
+
+  // Bollinger Bands — metals use wider 20-period on 1h (more meaningful)
+  const bb15=bbands(c15,20),bb1h=bbands(c1h,20);
+
+  // ATR — metals: heavier weight on 1h, ignore 5m
+  const a15=atr(k15,14),a1h=atr(k1h,14);
+  const a5=a15; // alias
+  const bATR=a15*0.45+a1h*0.55;
+
+  // EMA — metals use slower stacks: 20/50/100/200 on 1h
+  function emaStackMetal(closes) {
+    const c=closes.slice(-220);
+    const e20=ema(c.slice(-80),20),e50=ema(c.slice(-150),50),e100=ema(c.slice(-200),100),e200=ema(c,200);
+    const bull20_50=e20>e50,bull50_100=e50>e100,bull100_200=e100>e200;
+    const aligned=bull20_50&&bull50_100&&bull100_200;
+    const bearAligned=!bull20_50&&!bull50_100&&!bull100_200;
+    const score=((bull20_50?1:0)+(bull50_100?1:0)+(bull100_200?1:0)-1.5)/1.5;
+    return {e9:e20,e21:e50,e50:e100,e200,last:c.at(-1),score,aligned,bearAligned,bull9_21:bull20_50,bull21_50:bull50_100,bull50_200:bull100_200};
+  }
+  const es15=emaStackMetal(c15),es1h=emaStackMetal(c1h);
+  const es5=es15; // alias
+
+  // Metals algo weights: trend 30%, rsi 30%, macd 12%, bb 15%, session 13%
+  // No volume scoring — metal volumes from API are unreliable
+  const trendScore=es15.score*0.45+es1h.score*0.55;
+  // Metals RSI: oversold <35, overbought >65 on 15m; on 1h same thresholds
+  const rsiScore=(rsi15_14-50)/50*0.45+(rsi1h_14-50)/50*0.55;
+  const ms15=macd15.hist>0?1:macd15.hist<0?-1:0,ms1h=macd1h.hist>0?1:macd1h.hist<0?-1:0;
+  const ms5=ms15;
+  const macdXo15=(macd15.hist>0)!==(macd15.prevHist>0)?0.2*ms15:0;
+  const macdScore=(ms15*0.4+ms1h*0.6+macdXo15)/1.2;
+  const bbScore=(bb15.pct-0.5)*2*0.35+(bb1h.pct-0.5)*2*0.65;
+  // Session score is critical for metals (London/NY sessions define gold moves)
+  const sessS=(sessScore-0.5)*0.6;
+
+  const raw=trendScore*0.30+rsiScore*0.30+macdScore*0.12+bbScore*0.15+sessS*0.13;
+  const bias=Math.tanh(raw*2.2)*45;
+  let buy=Math.round(clamp(50+bias,5,95)),sell=100-buy;
+
+  const diff=Math.abs(buy-sell);
+  const allAligned=(es15.aligned&&es1h.aligned)||(es15.bearAligned&&es1h.bearAligned);
+  const rsiExtreme=Math.abs(rsi15_14-50)>18||Math.abs(rsi1h_14-50)>18;
+  const macdAligned=ms15===ms1h;
+  // Metals: session score heavily boosts confidence when London/NY are open
+  const sessBoost=sessScore>0.5?12:sessScore>0.3?6:0;
+  const conf=Math.round(clamp(45+diff*0.55+(allAligned?12:0)+(rsiExtreme?6:0)+(macdAligned?5:0)+sessBoost,42,96));
+  const clarity=diff>=30?'Very clear':diff>=18?'Clear':diff>=8?'Moderate':'Balanced';
+  const dominant=buy>=sell?'BUY':'SELL';
+
+  const {res:r15,sup:s15}=swingLevels(k15,price,100,3);
+  const {res:r1h,sup:s1h}=swingLevels(k1h,price,80,3);
+  const allRes=[...new Set([...r15,...r1h])].sort((a,b)=>a-b);
+  const allSup=[...new Set([...s15,...s1h])].sort((a,b)=>b-a);
+  const buyEntry=calcEntry(price,[...k15],k15,k1h,a15,a1h,'buy');
+  const sellEntry=calcEntry(price,[...k15],k15,k1h,a15,a1h,'sell');
+  const buySetup=buildSetup(buyEntry,'buy',allRes,allSup,bATR);
+  const sellSetup=buildSetup(sellEntry,'sell',allRes,allSup,bATR);
+
+  const mktName=mkt==='gold'?'Gold (XAU/USD)':'Silver (XAG/USD)';
+  const sessionNote=sessScore>0.55?'London/NY session is OPEN — highest volume, most reliable signals.':sessScore>0.3?'Moderate session activity.':'Low session activity — signals are less reliable right now.';
+  const reasons=[
+    `<strong>Trend (EMA 20/50/100/200)</strong> — 15m: ${es15.aligned?'Fully Bullish':es15.bearAligned?'Fully Bearish':'Mixed'} · 1h: ${es1h.aligned?'Fully Bullish':es1h.bearAligned?'Fully Bearish':'Mixed'}. ${allAligned?'Both timeframes agree — strong directional signal.':'Timeframes are mixed — wait for a clearer setup.'}`,
+    `<strong>RSI Momentum</strong> — 15m: ${rsi15_14.toFixed(0)} (fast RSI-7: ${rsi15_7.toFixed(0)}) · 1h: ${rsi1h_14.toFixed(0)}. ${rsi15_14<35?'15m oversold — look for a buy':rsi15_14>65?'15m overbought — look for a sell':rsi1h_14<35?'1h oversold — bullish bias':rsi1h_14>65?'1h overbought — bearish bias':'RSI is neutral — no extreme reading.'}`,
+    `<strong>MACD (15/30/9 — tuned for metals)</strong> — 15m histogram: ${macd15.hist>0?'+':''}${macd15.hist.toFixed(4)} ${macd15.hist>0?'(Bullish)':'(Bearish)'}${macdXo15!==0?' — Crossover detected!':''} · 1h: ${macd1h.hist>0?'Bullish':'Bearish'}.`,
+    `<strong>Bollinger Bands</strong> — 15m position: ${(bb15.pct*100).toFixed(0)}% · 1h position: ${(bb1h.pct*100).toFixed(0)}%. ${bb1h.pct<0.15?'1h near lower band — potential reversal up':bb1h.pct>0.85?'1h near upper band — potential reversal down':'Price within normal range.'}`,
+    `<strong>Session Score</strong> — ${(sessScore*100).toFixed(0)}%. ${sessionNote} For ${mktName}, the London Open (8am UTC) and NY Open (1:30pm UTC) are the most important trading windows.`,
+    `<strong>Volatility (ATR)</strong> — 15m ATR: ${fmtN(a15,2)} · 1h ATR: ${fmtN(a1h,2)} · Blended: ${fmtN(bATR,2)}. Metals have slower, smoother moves compared to crypto — targets and stops reflect this.`,
+    `<strong>Entry Levels</strong> — BUY entry near: ${fmtN(buyEntry,DP[CUR]||2)} (near support) · SELL entry near: ${fmtN(sellEntry,DP[CUR]||2)} (near resistance).`,
+  ];
+  const vr5=1,vr15=1; // volume N/A for metals from this API
+  return {buy,sell,conf,clarity,dominant,bATR,buySetup,sellSetup,rsi5_14,rsi15_14,rsi15_7,rsi1h_14,macd15,macd1h,bb15,vr15,vr5,es5,es15,es1h,a5,a15,a1h,sessScore,reasons,macdXo15,ms5,ms15,ms1h};
+}
+
+async function runAlgo(mkt, price, sessScore) {
+  let k5,k15,k1h;
+  if(mkt==='btc'){
+    [k5,k15,k1h]=await Promise.all([getBTCKlines('5m',200),getBTCKlines('15m',200),getBTCKlines('1h',200)]);
+    return runAlgoBTC(price, sessScore, k5, k15, k1h);
+  } else {
+    [k15,k1h]=await Promise.all([getMetalKlines(mkt,'15min',120),getMetalKlines(mkt,'1h',100)]);
+    return runAlgoMetal(mkt, price, sessScore, k15, k1h);
+  }
+}
+
+// 
 // UI
-// ═══════════════════════════════════════════════════════════════
+// 
 function resetUI() {
   const labels = {btc:'BTC / USDT  ·  Bitcoin', gold:'XAU / USD  ·  Gold Spot', silver:'XAG / USD  ·  Silver Spot'};
   $('phLabel').textContent = labels[CUR] || '--';
@@ -1200,14 +1332,14 @@ function setTfPill(id, score) {
   const el = $(id);
   const bull = score > 0;
   el.className = `tf-pill ${score > 0.2 ? 'bull' : score < -0.2 ? 'bear' : 'neut'}`;
-  el.querySelector('.tf-sig').textContent = score > 0.2 ? '▲ Bull' : score < -0.2 ? '▼ Bear' : '– Neut';
+  el.querySelector('.tf-sig').textContent = score > 0.2 ? ' Bull' : score < -0.2 ? ' Bear' : '– Neut';
 }
 
 function renderAlgo(r, dp) {
   const dom = r.dominant;
   const bc = $('biasCard');
   bc.className = `bias-card ${dom==='BUY'?'buy':dom==='SELL'?'sell':'neutral'}`;
-  $('biasIcon').textContent = dom==='BUY' ? '▲' : dom==='SELL' ? '▼' : '–';
+  $('biasIcon').textContent = dom==='BUY' ? '' : dom==='SELL' ? '' : '–';
   $('biasDir').textContent = dom;
   $('biasLabel').textContent = `${r.clarity} signal · ATR ${fmtN(r.bATR,2)}`;
   $('confNum').textContent = r.conf + '%';
@@ -1240,22 +1372,22 @@ function renderAlgo(r, dp) {
   setInd('iRsi','iRsiSub', r.rsi15_14.toFixed(1), rsi14c, r.rsi15_14<35?'Oversold':r.rsi15_14>65?'Overbought':'Neutral');
   setInd('iRsi7','iRsi7Sub', r.rsi15_7.toFixed(1), rsi7c, r.rsi15_7<30?'Extreme OS':r.rsi15_7>70?'Extreme OB':'Neutral');
   const mh=r.macd15.hist, mxo=(r.macd15.hist>0)!==(r.macd15.prevHist>0);
-  setInd('iMacd','iMacdSub', (mh>=0?'+':'')+mh.toFixed(4), mh>0?'bull':'bear', mxo?'⚡ Crossover':mh>0?'Bullish':'Bearish');
+  setInd('iMacd','iMacdSub', (mh>=0?'+':'')+mh.toFixed(4), mh>0?'bull':'bear', mxo?' Crossover':mh>0?'Bullish':'Bearish');
   const bbp=r.bb15.pct;
   setInd('iBb','iBbSub', (bbp*100).toFixed(0)+'%', bbp<0.2?'bull':bbp>0.8?'bear':'neut', bbp<0.2?'Near lower band':bbp>0.8?'Near upper band':'Mid-band');
   setInd('iAtr',null, fmtN(r.bATR,2), 'neut');
   setInd('iVol','iVolSub', r.vr15.toFixed(2)+'×', r.vr15>1.2?'bull':r.vr15<0.8?'bear':'neut', r.vr15>1.2?'High volume':r.vr15<0.8?'Low volume':'Normal');
-  setInd('iEma','iEmaSub', r.es15.bull9_21?'9 > 21 ▲':'9 < 21 ▼', r.es15.bull9_21?'bull':'bear', r.es15.bull21_50?'21 > 50 ▲':'21 < 50 ▼');
-  setInd('iEma2','iEma2Sub', r.es1h.bull50_200?'50 > 200 ▲':'50 < 200 ▼', r.es1h.bull50_200?'bull':'bear', r.es1h.aligned?'All bullish':r.es1h.bearAligned?'All bearish':'Mixed');
+  setInd('iEma','iEmaSub', r.es15.bull9_21?'9 > 21 ':'9 < 21 ', r.es15.bull9_21?'bull':'bear', r.es15.bull21_50?'21 > 50 ':'21 < 50 ');
+  setInd('iEma2','iEma2Sub', r.es1h.bull50_200?'50 > 200 ':'50 < 200 ', r.es1h.bull50_200?'bull':'bear', r.es1h.aligned?'All bullish':r.es1h.bearAligned?'All bearish':'Mixed');
   setInd('iSess','iSessSub', (r.sessScore*100).toFixed(0)+'%', r.sessScore>0.5?'bull':r.sessScore>0.2?'neut':'bear', r.sessScore>0.6?'Strong overlap':r.sessScore>0.3?'Active':'Low activity');
 
   // Store for indicator modal
   window._lastR = r;
 }
 
-// ═══════════════════════════════════════════════════════════════
+// 
 // REFRESH LOOP
-// ═══════════════════════════════════════════════════════════════
+// 
 async function refresh() {
   if(!CUR || FETCHING) return;
   FETCHING = true;
@@ -1293,9 +1425,9 @@ async function refresh() {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
+// 
 // WHY MODAL
-// ═══════════════════════════════════════════════════════════════
+// 
 function openWhy() {
   if(!LAST_ANALYSIS) return;
   $('whyContent').innerHTML = LAST_ANALYSIS.reasons.map(r=>`<div class="reason-block">${r}</div>`).join('');
@@ -1303,9 +1435,9 @@ function openWhy() {
 }
 function closeWhy() { $('whyModal').classList.remove('open'); }
 
-// ═══════════════════════════════════════════════════════════════
+// 
 // INDICATOR MODAL
-// ═══════════════════════════════════════════════════════════════
+// 
 const IND_INFO = {
   rsi14: {
     title: 'RSI 14 · Relative Strength Index',
@@ -1339,7 +1471,7 @@ const IND_INFO = {
       { label: 'Histogram > 0 & rising', cls: 'bull', meaning: 'Bullish momentum accelerating' },
       { label: 'Histogram > 0 & falling', cls: 'neut', meaning: 'Bullish but momentum weakening' },
       { label: 'Histogram < 0 & falling', cls: 'bear', meaning: 'Bearish momentum accelerating' },
-      { label: 'Crossover ⚡', cls: 'bull', meaning: 'Histogram crossed zero — strong entry signal' },
+      { label: 'Crossover ', cls: 'bull', meaning: 'Histogram crossed zero — strong entry signal' },
     ],
     valKey: 'macd_hist',
   },
@@ -1438,12 +1570,12 @@ function showIndModal(key) {
       <div style="font-family:var(--font-mono);font-size:22px;font-weight:700" class="${currentClass}">${currentVal}</div>
     </div>
     <div class="ie-desc">${info.desc}</div>
-    <div style="margin-top:14px;margin-bottom:6px;font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--tx3);font-weight:700">How to read it</div>
+    <div style="margin-top:14px;margin-bottom:6px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--tx2);font-weight:700">How to read it</div>
     ${info.zones.map(z=>`
       <div class="ie-metric">
         <div class="ie-dot ${z.cls}"></div>
         <div class="ie-key">${z.label}</div>
-        <div style="font-size:11px;color:var(--tx2);text-align:right;flex:2">${z.meaning}</div>
+        <div style="font-size:13px;color:var(--tx);text-align:right;flex:2">${z.meaning}</div>
       </div>
     `).join('')}
   `;
@@ -1453,9 +1585,9 @@ function showIndModal(key) {
 
 function closeIndModal() { $('indModal').classList.remove('open'); }
 
-// ═══════════════════════════════════════════════════════════════
+// 
 // NEWS
-// ═══════════════════════════════════════════════════════════════
+// 
 const RSS_FEEDS = [
   {url:'https://cointelegraph.com/rss',   label:'Cointelegraph'},
   {url:'https://decrypt.co/feed',         label:'Decrypt'},
@@ -1501,12 +1633,43 @@ async function fetchNews() {
       <div class="news-top">
         <span class="news-src">${esc(a.source)}</span>
         ${ag?`<span class="news-age">${ag}</span>`:''}
-        <span class="news-sent ${se}">${se==='bull'?'▲ Bullish':se==='bear'?'▼ Bearish':'Neutral'}</span>
+        <span class="news-sent ${se}">${se==='bull'?' Bullish':se==='bear'?' Bearish':'Neutral'}</span>
       </div>
       <div class="news-title">${esc(a.title)}</div>
     </a>`;
   }).join('');
 }
 </script>
+
+<!-- Weekend Closed Modal for Gold/Silver -->
+<div class="modal-overlay" id="weekendModal">
+  <div class="modal" style="border-radius:20px 20px 0 0;">
+    <div class="modal-drag"></div>
+    <div class="modal-hdr" style="border-bottom:2px solid var(--se-bor);">
+      <div class="modal-title" style="color:var(--se);">Market Closed This Weekend</div>
+      <div class="modal-sub">Gold and Silver do not trade on Saturday and Sunday</div>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:16px;">
+      <div style="background:var(--se-dim);border:1px solid var(--se-bor);border-radius:10px;padding:16px;font-size:15px;line-height:1.7;color:var(--tx2);">
+        <strong style="color:var(--se);display:block;margin-bottom:6px;font-size:16px;">Weekend Notice</strong>
+        The metals market (Gold &amp; Silver) is <strong style="color:var(--se);">closed on Saturday and Sunday</strong>. Prices shown are from Friday's close and signals may not be reliable.<br><br>
+        Trading resumes on <strong style="color:var(--tx);">Monday at approximately 6:00 AM IST</strong>.
+      </div>
+      <div style="background:var(--sur2);border:1px solid var(--bor);border-radius:10px;padding:14px;font-size:14px;color:var(--tx2);line-height:1.6;">
+        <strong style="color:var(--tx);">What can you do now?</strong><br>
+        You can still view the dashboard, but treat any Buy/Sell signals as <strong>reference only</strong> — not live signals. Come back on Monday when the market opens.
+      </div>
+      <div style="display:flex;gap:10px;margin-top:4px;">
+        <button onclick="closeWeekendModal()" style="flex:1;padding:14px;border-radius:10px;border:1px solid var(--bor);background:var(--sur);color:var(--tx2);font-size:15px;font-weight:600;cursor:pointer;">
+          Go Back
+        </button>
+        <button onclick="continueWeekend()" style="flex:1;padding:14px;border-radius:10px;border:none;background:var(--se);color:#fff;font-size:15px;font-weight:700;cursor:pointer;">
+          Continue Anyway
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
