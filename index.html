@@ -478,7 +478,7 @@ body::before {
 <div class="screen on" id="sHome">
   <div class="home-wrap">
     <div class="home-header">
-      <div class="home-logo">Scalper_Pro</div>
+      <div class="home-logo">ScalperPro</div>
       <div class="home-sub">Live Prices &amp; Buy/Sell Signals</div>
     </div>
 
@@ -564,17 +564,20 @@ body::before {
       </div>
       <div class="bias-bottom">
         <div class="tf-pills">
-          <div class="tf-pill neut" id="tf5">
+          <div class="tf-pill neut" id="tf5" onclick="showTfModal('5m')" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
             <span class="tf-frame">5 min</span>
             <span class="tf-sig">--</span>
+            <span style="display:block;font-size:9px;color:var(--tx3);margin-top:2px">tap for details</span>
           </div>
-          <div class="tf-pill neut" id="tf15">
+          <div class="tf-pill neut" id="tf15" onclick="showTfModal('15m')" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
             <span class="tf-frame">15 min</span>
             <span class="tf-sig">--</span>
+            <span style="display:block;font-size:9px;color:var(--tx3);margin-top:2px">tap for details</span>
           </div>
-          <div class="tf-pill neut" id="tf1h">
+          <div class="tf-pill neut" id="tf1h" onclick="showTfModal('1h')" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
             <span class="tf-frame">1 Hour</span>
             <span class="tf-sig">--</span>
+            <span style="display:block;font-size:9px;color:var(--tx3);margin-top:2px">tap for details</span>
           </div>
         </div>
       </div>
@@ -584,7 +587,7 @@ body::before {
     <div class="prob-card">
       <div class="prob-row">
         <div class="prob-hdr">
-          <span class="prob-lbl b"> Buy Probability</span>
+          <span class="prob-lbl b">BUY Signal Strength</span>
           <span class="prob-pct b" id="buyPct">--</span>
         </div>
         <div class="bar-track"><div class="bar-fill b" id="buyBar" style="width:50%"></div></div>
@@ -592,7 +595,7 @@ body::before {
       <div class="prob-divider"></div>
       <div class="prob-row">
         <div class="prob-hdr">
-          <span class="prob-lbl s"> Sell Probability</span>
+          <span class="prob-lbl s">SELL Signal Strength</span>
           <span class="prob-pct s" id="sellPct">--</span>
         </div>
         <div class="bar-track"><div class="bar-fill s" id="sellBar" style="width:50%"></div></div>
@@ -704,7 +707,7 @@ body::before {
     </div>
 
     <!-- Why -->
-    <button class="why-btn" onclick="openWhy()"> Why is it saying Buy or Sell? Tap to understand</button>
+    <button class="why-btn" onclick="openWhy()">Why is it saying Buy or Sell? Tap to understand</button>
 
   </div>
 </div><!-- /sDash -->
@@ -748,26 +751,58 @@ body::before {
 // 
 const TD_KEY = '275e40dff5c2433c81079c6b212660dc';
 
+// BTC weekday sessions (Mon–Fri, or Fri before 21:00 UTC)
+// These are institutional-driven: US/London/EU close on weekends
+const SESSIONS_BTC_WEEKDAY = [
+  {id:'us',  name:'US / New York',    o:13.5, c:20,  w:7, inst:true},
+  {id:'uk',  name:'UK / London',      o:8,    c:16,  w:5, inst:true},
+  {id:'eu',  name:'EU Overlap',       o:7,    c:15,  w:4, inst:true},
+  {id:'jp',  name:'Japan / Tokyo',    o:0,    c:6,   w:4, inst:false},
+  {id:'hk',  name:'Hong Kong',        o:1.5,  c:8,   w:3, inst:false},
+  {id:'au',  name:'Sydney',           o:22,   c:5,   w:2, inst:false},
+];
+
+// BTC weekend sessions (Sat–Sun): institutional desks are CLOSED
+// Only crypto-native retail/algorithmic sessions matter
+// Volume is ~30-40% of weekday — signals are weaker, fewer recommendations expected
+const SESSIONS_BTC_WEEKEND = [
+  {id:'asia',   name:'Asia Crypto',        o:1,    c:9,   w:5, inst:false},
+  {id:'au',     name:'Sydney',             o:22,   c:5,   w:3, inst:false},
+  {id:'us_ret', name:'US Retail (Crypto)', o:14,   c:22,  w:4, inst:false},
+  {id:'eu_ret', name:'EU Retail (Crypto)', o:8,    c:16,  w:3, inst:false},
+];
+
+// Friday partial: after 21:00 UTC US markets close, treat as weekend-like for BTC
+// Use reduced weights for the remaining institutional sessions
+const SESSIONS_BTC_FRIDAY_LATE = [
+  {id:'jp',  name:'Japan / Tokyo',    o:0,    c:6,   w:3, inst:false},
+  {id:'hk',  name:'Hong Kong',        o:1.5,  c:8,   w:2, inst:false},
+  {id:'au',  name:'Sydney',           o:22,   c:5,   w:2, inst:false},
+  {id:'us_ret', name:'US Retail (Crypto)', o:21, c:2,  w:2, inst:false},
+];
+
+function getBTCSessions() {
+  const d = new Date();
+  const day = d.getUTCDay();   // 0=Sun, 1=Mon ... 5=Fri, 6=Sat
+  const h = d.getUTCHours() + d.getUTCMinutes() / 60;
+  if (day === 0 || day === 6) return { sessions: SESSIONS_BTC_WEEKEND, isWeekend: true, isFridayLate: false };
+  if (day === 5 && h >= 21)   return { sessions: SESSIONS_BTC_FRIDAY_LATE, isWeekend: false, isFridayLate: true };
+  return { sessions: SESSIONS_BTC_WEEKDAY, isWeekend: false, isFridayLate: false };
+}
+
 const SESSIONS = {
-  btc: [
-    {id:'us',  name:'US / New York',  o:13.5, c:20,  w:7},
-    {id:'uk',  name:'UK / London',    o:8,    c:16,  w:5},
-    {id:'eu',  name:'EU Overlap',     o:7,    c:15,  w:4},
-    {id:'jp',  name:'Japan / Tokyo',  o:0,    c:6,   w:4},
-    {id:'hk',  name:'Hong Kong',      o:1.5,  c:8,   w:3},
-    {id:'au',  name:'Sydney',         o:22,   c:5,   w:2},
-  ],
+  btc: SESSIONS_BTC_WEEKDAY, // default — overridden at runtime by getBTCSessions()
   gold: [
-    {id:'uk',  name:'London Open', o:8,    c:16,  w:8},
-    {id:'us',  name:'NY Open',     o:13.5, c:20,  w:8},
-    {id:'eu',  name:'EU Overlap',     o:7,    c:15,  w:5},
-    {id:'jp',  name:'Tokyo',          o:0,    c:6,   w:2},
+    {id:'uk',  name:'London Open',  o:8,    c:16,  w:8, inst:true},
+    {id:'us',  name:'NY Open',      o:13.5, c:20,  w:8, inst:true},
+    {id:'eu',  name:'EU Overlap',   o:7,    c:15,  w:5, inst:true},
+    {id:'jp',  name:'Tokyo',        o:0,    c:6,   w:2, inst:false},
   ],
   silver: [
-    {id:'uk',  name:'London Open', o:8,    c:16,  w:8},
-    {id:'us',  name:'NY Open',     o:13.5, c:20,  w:8},
-    {id:'eu',  name:'EU Overlap',     o:7,    c:15,  w:5},
-    {id:'jp',  name:'Tokyo',          o:0,    c:6,   w:2},
+    {id:'uk',  name:'London Open',  o:8,    c:16,  w:8, inst:true},
+    {id:'us',  name:'NY Open',      o:13.5, c:20,  w:8, inst:true},
+    {id:'eu',  name:'EU Overlap',   o:7,    c:15,  w:5, inst:true},
+    {id:'jp',  name:'Tokyo',        o:0,    c:6,   w:2, inst:false},
   ],
 };
 
@@ -875,6 +910,7 @@ async function _doOpenMkt(mkt) {
     $('newsSection').style.display = 'none';
   }
 
+  window._lastMkt = mkt;
   await refresh();
   TIMERS.price = setInterval(refresh, REFRESH[mkt]);
   TIMERS.sess  = setInterval(() => buildSessions(mkt), 1000);
@@ -919,10 +955,46 @@ function mountChart(mkt) {
 // SESSIONS
 // 
 function buildSessions(mkt) {
-  const cfg = SESSIONS[mkt];
+  // For BTC: pick the right session set based on day/time
+  let cfg, isWeekend = false, isFridayLate = false;
+  if (mkt === 'btc') {
+    const btcSess = getBTCSessions();
+    cfg = btcSess.sessions;
+    isWeekend = btcSess.isWeekend;
+    isFridayLate = btcSess.isFridayLate;
+  } else {
+    cfg = SESSIONS[mkt];
+  }
+
   const h = utcH();
   const now = Date.now();
   let html = '', totalW = 0, scoreW = 0;
+
+  // Weekend cap: BTC weekend volume is ~35% of weekday. Cap session score multiplier.
+  const weekendVolCap = isWeekend ? 0.35 : isFridayLate ? 0.55 : 1.0;
+
+  // Section header note for weekend/friday-late
+  if (mkt === 'btc') {
+    const d = new Date();
+    const day = d.getUTCDay();
+    const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][day];
+    if (isWeekend) {
+      html += `<div style="grid-column:1/-1;padding:10px 12px;border-radius:8px;
+        background:rgb(255 68 101 / .08);border:1px solid rgb(255 68 101 / .2);
+        font-size:11px;line-height:1.6;color:var(--tx2);margin-bottom:4px;">
+        <strong style="color:var(--se);">Weekend Mode</strong> — Institutional markets (US, London, EU) are 
+        <strong>closed</strong> today. Only crypto-native sessions are active. 
+        Expect <strong style="color:var(--se);">lower volume</strong> and fewer strong signals.
+      </div>`;
+    } else if (isFridayLate) {
+      html += `<div style="grid-column:1/-1;padding:10px 12px;border-radius:8px;
+        background:rgb(255 215 64 / .06);border:1px solid rgb(255 215 64 / .18);
+        font-size:11px;line-height:1.6;color:var(--tx2);margin-bottom:4px;">
+        <strong style="color:var(--go);">Friday After-Hours</strong> — US and EU institutional desks have 
+        <strong>closed for the weekend</strong>. Reduced institutional flow until Monday 08:00 UTC.
+      </div>`;
+    }
+  }
 
   cfg.forEach(s => {
     const cross = s.c < s.o;
@@ -948,20 +1020,48 @@ function buildSessions(mkt) {
       : `Opens ${fmtIST(s.o)}`;
 
     const statusLabel = open ? 'Open' : opening ? 'Opening' : 'Closed';
-    html += `<div class="sess-card${active?' active':''}">
-      <div class="sess-name">${s.name}</div>
-      <div class="sess-status">${statusLabel}</div>
+
+    // Institutional sessions on weekend get a "Closed (weekend)" badge
+    const isInstClosed = s.inst && (isWeekend || isFridayLate);
+    const statusDisplay = isInstClosed ? 'Closed (Weekend)' : statusLabel;
+    const cardClass = isInstClosed ? '' : (active ? ' active' : '');
+    const nameStyle = isInstClosed ? 'color:var(--tx3);text-decoration:line-through;' : '';
+
+    html += `<div class="sess-card${cardClass}">
+      <div class="sess-name" style="${nameStyle}">${s.name}${s.inst ? ' <span style="font-size:9px;color:var(--tx3);font-weight:600;">INST</span>' : ''}</div>
+      <div class="sess-status" style="${isInstClosed?'color:var(--tx3)':''}">${statusDisplay}</div>
       <div class="sess-time">${fmtIST(s.o)} – ${fmtIST(s.c)}</div>
-      <div class="sess-time">${timer}</div>
+      <div class="sess-time">${isInstClosed ? 'Resumes Monday' : timer}</div>
     </div>`;
 
     totalW += s.w;
-    if(open) scoreW += s.w;
-    else if(opening) scoreW += s.w * 0.5;
+    if (!isInstClosed) {
+      if(open) scoreW += s.w;
+      else if(opening) scoreW += s.w * 0.5;
+    }
   });
 
+  // Update section label to reflect weekend/weekday
+  if (mkt === 'btc') {
+    const d2 = new Date();
+    const day2 = d2.getUTCDay();
+    const h2 = d2.getUTCHours() + d2.getUTCMinutes() / 60;
+    if (day2 === 0 || day2 === 6) {
+      $('sessLabel').textContent = 'BTC Sessions (Weekend — Crypto Only)';
+    } else if (day2 === 5 && h2 >= 21) {
+      $('sessLabel').textContent = 'BTC Sessions (Friday After-Hours)';
+    } else {
+      $('sessLabel').textContent = 'BTC Sessions · IST';
+    }
+  } else {
+    $('sessLabel').textContent = 'Market Sessions · IST';
+  }
+
   $('sessGrid').innerHTML = html;
-  return scoreW / totalW;
+
+  // Apply weekend volume cap to the session score so algo gets realistic weighting
+  const rawScore = totalW > 0 ? scoreW / totalW : 0;
+  return rawScore * weekendVolCap;
 }
 
 // 
@@ -1190,7 +1290,7 @@ async function runAlgoBTC(price, sessScore, k5, k15, k1h) {
     `<strong>Bollinger Bands (15m)</strong> — Price is at ${(bb15.pct*100).toFixed(0)}% of the band range. ${bb15.pct<0.15?'Near the lower band — potential bounce':bb15.pct>0.85?'Near the upper band — potential reversal':'Price is in the middle area.'}`,
     `<strong>Volume</strong> — 5m: ${vr5.toFixed(2)}x average · 15m: ${vr15.toFixed(2)}x average. ${vr15>1.2?'Above average — confirms the move.':vr15<0.7?'Low volume — be extra careful.':'Normal volume.'}`,
     `<strong>Volatility (ATR)</strong> — Blended ATR: ${fmtN(bATR,2)}. Stops and targets are based on real support and resistance levels.`,
-    `<strong>Session Activity</strong> — Score: ${(sessScore*100).toFixed(0)}%. BUY entry near: ${fmtN(buyEntry,DP[CUR]||2)} · SELL entry near: ${fmtN(sellEntry,DP[CUR]||2)}.`,
+    `<strong>Session Activity</strong> — Score: ${(sessScore*100).toFixed(0)}% ${(()=>{const d=new Date();const day=d.getUTCDay();const h=d.getUTCHours()+d.getUTCMinutes()/60;return(day===0||day===6)?'<span style="color:var(--se)">[Weekend — institutional desks closed. Crypto-only sessions active. Lower volume.]</span>':(day===5&&h>=21)?'<span style="color:var(--go)">[Friday after-hours — reduced institutional flow until Monday]</span>':'';})()}. BUY entry near: ${fmtN(buyEntry,DP[CUR]||2)} · SELL entry near: ${fmtN(sellEntry,DP[CUR]||2)}.`,
   ];
   return {buy,sell,conf,clarity,dominant,bATR,buySetup,sellSetup,rsi5_14,rsi15_14,rsi15_7,rsi1h_14,macd15,macd1h,bb15,vr15,vr5,es5,es15,es1h,a5,a15,a1h,sessScore,reasons,macdXo15,ms5,ms15,ms1h};
 }
@@ -1373,8 +1473,10 @@ function renderAlgo(r, dp) {
   setInd('iRsi7','iRsi7Sub', r.rsi15_7.toFixed(1), rsi7c, r.rsi15_7<30?'Extreme OS':r.rsi15_7>70?'Extreme OB':'Neutral');
   const mh=r.macd15.hist, mxo=(r.macd15.hist>0)!==(r.macd15.prevHist>0);
   setInd('iMacd','iMacdSub', (mh>=0?'+':'')+mh.toFixed(4), mh>0?'bull':'bear', mxo?' Crossover':mh>0?'Bullish':'Bearish');
-  const bbp=r.bb15.pct;
-  setInd('iBb','iBbSub', (bbp*100).toFixed(0)+'%', bbp<0.2?'bull':bbp>0.8?'bear':'neut', bbp<0.2?'Near lower band':bbp>0.8?'Near upper band':'Mid-band');
+  const bbp=r.bb15.pct, bb=r.bb15;
+  const bbCls=bbp<0.2?'bull':bbp>0.8?'bear':'neut';
+  const bbSub=bbp<0.15?`Lower ${fmtN(bb.lower,dp)} — Bounce`:bbp>0.85?`Upper ${fmtN(bb.upper,dp)} — Reversal`:`Mid ${fmtN(bb.mid,dp)} — Neutral`;
+  setInd('iBb','iBbSub', (bbp*100).toFixed(0)+'%', bbCls, bbSub);
   setInd('iAtr',null, fmtN(r.bATR,2), 'neut');
   setInd('iVol','iVolSub', r.vr15.toFixed(2)+'×', r.vr15>1.2?'bull':r.vr15<0.8?'bear':'neut', r.vr15>1.2?'High volume':r.vr15<0.8?'Low volume':'Normal');
   setInd('iEma','iEmaSub', r.es15.bull9_21?'9 > 21 ':'9 < 21 ', r.es15.bull9_21?'bull':'bear', r.es15.bull21_50?'21 > 50 ':'21 < 50 ');
@@ -1383,6 +1485,7 @@ function renderAlgo(r, dp) {
 
   // Store for indicator modal
   window._lastR = r;
+  window._lastDP = dp;
 }
 
 // 
@@ -1564,12 +1667,46 @@ function showIndModal(key) {
     else if(key==='sess'){ currentVal=(r.sessScore*100).toFixed(0)+'%'; currentClass=r.sessScore>0.5?'bull':r.sessScore>0.25?'neut':'bear'; }
   }
 
+  // Extra detail block for specific indicators
+  let extraBlock = '';
+  if (key === 'bb' && r) {
+    const bb = r.bb15, dp2 = window._lastDP || 2;
+    const bbp = bb.pct;
+    extraBlock = `<div style="background:var(--sur2);border:1px solid var(--bor);border-radius:10px;padding:14px;margin-top:12px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-bottom:10px">Current Band Levels</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--se);font-weight:600">Upper Band</span>
+          <span style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--se)">${fmtN(bb.upper,dp2)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--tx2);font-weight:600">Middle Band (MA20)</span>
+          <span style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--tx2)">${fmtN(bb.mid,dp2)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--bu);font-weight:600">Lower Band</span>
+          <span style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--bu)">${fmtN(bb.lower,dp2)}</span>
+        </div>
+        <div style="height:1px;background:var(--bor);margin:2px 0"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--tx3)">Band Width</span>
+          <span style="font-family:var(--font-mono);font-size:14px;color:var(--tx2)">${fmtN(bb.upper-bb.lower,dp2)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--tx3)">Price Position</span>
+          <span style="font-size:13px;font-weight:700;color:${bbp<0.2?'var(--bu)':bbp>0.8?'var(--se)':'var(--tx2)'}">${bbp<0.15?'Near lower band (bounce zone)':bbp>0.85?'Near upper band (reversal zone)':bbp<0.4?'Below mid-band':bbp>0.6?'Above mid-band':'Mid-band (neutral)'}</span>
+        </div>
+      </div>
+    </div>`;
+  }
+
   const body = `
     <div style="display:flex;align-items:center;gap:12px;padding:12px 0;margin-bottom:8px;border-bottom:1px solid var(--bor)">
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);font-weight:700;flex:1">Current Reading</div>
       <div style="font-family:var(--font-mono);font-size:22px;font-weight:700" class="${currentClass}">${currentVal}</div>
     </div>
     <div class="ie-desc">${info.desc}</div>
+    ${extraBlock}
     <div style="margin-top:14px;margin-bottom:6px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--tx2);font-weight:700">How to read it</div>
     ${info.zones.map(z=>`
       <div class="ie-metric">
@@ -1639,6 +1776,144 @@ async function fetchNews() {
     </a>`;
   }).join('');
 }
+
+// ═══════════════════════════════════════════════
+// TIMEFRAME BREAKDOWN MODAL
+// ═══════════════════════════════════════════════
+function closeTfModal() { $('tfModal').classList.remove('open'); }
+
+function showTfModal(tf) {
+  const r = window._lastR;
+  if (!r) { alert('Load data first — tap Refresh'); return; }
+  const dp = window._lastDP || 2;
+
+  let es, rsiVal, macdData, atrVal, tfLabel;
+  if (tf==='5m')       { es=r.es5;  rsiVal=r.rsi5_14;  macdData=r.macd15; atrVal=r.a5;  tfLabel='5-minute candles'; }
+  else if (tf==='15m') { es=r.es15; rsiVal=r.rsi15_14; macdData=r.macd15; atrVal=r.a15; tfLabel='15-minute candles'; }
+  else                 { es=r.es1h; rsiVal=r.rsi1h_14; macdData=r.macd1h; atrVal=r.a1h; tfLabel='1-hour candles'; }
+
+  const score = es.score;
+  const isBull = score > 0.2, isBear = score < -0.2;
+  const label = isBull ? 'BULLISH' : isBear ? 'BEARISH' : 'NEUTRAL';
+  const color = isBull ? 'var(--bu)' : isBear ? 'var(--se)' : 'var(--tx2)';
+  const bgColor = isBull ? 'var(--bu-dim)' : isBear ? 'var(--se-dim)' : 'var(--sur2)';
+  const borColor = isBull ? 'var(--bu-bor)' : isBear ? 'var(--se-bor)' : 'var(--bor)';
+
+  const emaScore = (es.bull9_21?1:0)+(es.bull21_50?1:0)+(es.bull50_200?1:0);
+  const emaVerdict = emaScore===3 ? 'All 3 EMAs aligned bullish — maximum trend conviction'
+    : emaScore===2 ? '2 of 3 EMAs bullish — uptrend forming, not fully confirmed'
+    : emaScore===1 ? '2 of 3 EMAs bearish — downtrend forming, mixed signals'
+    : 'All 3 EMAs aligned bearish — maximum bearish conviction';
+  const emaVerdictColor = emaScore>=2?'var(--bu)':emaScore<=1?'var(--se)':'var(--tx2)';
+
+  const rsiColor = rsiVal<35?'var(--bu)':rsiVal>65?'var(--se)':'var(--tx2)';
+  const rsiLabel = rsiVal<28 ? 'Extremely Oversold — strong bounce potential'
+    : rsiVal<38 ? 'Oversold — look for buy setups'
+    : rsiVal<48 ? 'Below 50 — mild bearish lean'
+    : rsiVal<58 ? 'Above 50 — mild bullish lean'
+    : rsiVal<68 ? 'Overbought — look for sell setups'
+    : 'Extremely Overbought — pullback likely';
+
+  const mh = macdData.hist;
+  const mxo = (mh>0) !== (macdData.prevHist>0);
+  const mColor = mh>0?'var(--bu)':'var(--se)';
+  const mLabel = mxo
+    ? (mh>0 ? 'Just crossed ABOVE zero — fresh bullish entry signal' : 'Just crossed BELOW zero — fresh bearish entry signal')
+    : mh>0 ? 'Histogram positive — bullish momentum continuing'
+    : 'Histogram negative — bearish momentum continuing';
+
+  // EMA labels change for 1h (uses 20/50/100/200 for metals, 9/21/50/200 for BTC)
+  const isMetal = window._lastMkt && window._lastMkt !== 'btc';
+  const e1l = tf==='1h'&&isMetal ? 'EMA 20 vs EMA 50' : tf==='1h' ? 'EMA 9 vs EMA 21 (1H)' : 'EMA 9 vs EMA 21';
+  const e2l = tf==='1h'&&isMetal ? 'EMA 50 vs EMA 100' : tf==='1h' ? 'EMA 21 vs EMA 50 (1H)' : 'EMA 21 vs EMA 50';
+  const e3l = tf==='1h'&&isMetal ? 'EMA 100 vs EMA 200' : 'EMA 50 vs EMA 200';
+  const e1b = es.bull9_21, e2b = es.bull21_50, e3b = es.bull50_200;
+
+  function eRow(lbl, bull, yep, nope, last) {
+    return `<div style="display:flex;align-items:center;gap:10px;padding:11px 0;${last?'':'border-bottom:1px solid var(--bor)'}">
+      <div style="width:9px;height:9px;border-radius:50%;background:${bull?'var(--bu)':'var(--se)'};flex-shrink:0"></div>
+      <div style="flex:1.2;font-size:13px;color:var(--tx2);font-weight:500">${lbl}</div>
+      <div style="font-size:13px;font-weight:700;color:${bull?'var(--bu)':'var(--se)'};text-align:right;flex:2">${bull?'▲ '+yep:'▼ '+nope}</div>
+    </div>`;
+  }
+
+  const rsiPos = Math.min(Math.max(rsiVal,0),100);
+
+  $('tfModalTitle').textContent = tf==='5m'?'5-Minute Breakdown':tf==='15m'?'15-Minute Breakdown':'1-Hour Breakdown';
+  $('tfModalSub').textContent = `Why ${tfLabel} is showing ${label}`;
+
+  $('tfModalBody').innerHTML = `
+    <!-- Overall verdict banner -->
+    <div style="background:${bgColor};border:1px solid ${borColor};border-radius:12px;padding:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-weight:700">${tfLabel}</div>
+        <div style="font-size:26px;font-weight:800;color:${color};margin-top:3px;letter-spacing:.02em">${label}</div>
+        <div style="font-size:12px;color:var(--tx2);margin-top:4px">${isBull?'Price is trending UP on this timeframe':isBear?'Price is trending DOWN on this timeframe':'No clear trend on this timeframe'}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;margin-left:12px">
+        <div style="font-size:10px;color:var(--tx3);font-weight:700;letter-spacing:.06em">EMA SCORE</div>
+        <div style="font-family:var(--font-disp);font-size:36px;color:${color};line-height:1">${emaScore}/3</div>
+        <div style="font-size:10px;color:var(--tx3)">${emaScore===3?'Max bull':emaScore===2?'Mostly bull':emaScore===1?'Mostly bear':'Max bear'}</div>
+      </div>
+    </div>
+
+    <!-- EMA Stack -->
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-weight:700;margin-bottom:8px">EMA Stack — What the moving averages say</div>
+    <div style="background:var(--sur2);border:1px solid var(--bor);border-radius:12px;padding:4px 14px;margin-bottom:6px">
+      ${eRow(e1l, e1b, 'Fast EMA above slow — momentum up', 'Fast EMA below slow — momentum down', false)}
+      ${eRow(e2l, e2b, 'Short-term uptrend active', 'Short-term downtrend active', false)}
+      ${eRow(e3l, e3b, 'Macro Golden Cross — strong bull structure', 'Macro Death Cross — strong bear structure', true)}
+    </div>
+    <div style="font-size:12px;color:${emaVerdictColor};font-weight:600;padding:4px 2px;margin-bottom:16px">${emaVerdict}</div>
+
+    <!-- RSI -->
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-weight:700;margin-bottom:8px">RSI 14 — Is price overbought or oversold?</div>
+    <div style="background:var(--sur2);border:1px solid var(--bor);border-radius:12px;padding:16px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:13px;color:var(--tx2)">Current RSI</div>
+        <div style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:${rsiColor}">${rsiVal.toFixed(1)}</div>
+      </div>
+      <!-- RSI gradient gauge -->
+      <div style="position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--bu) 0%,#00e676 20%,var(--tx3) 30%,var(--tx3) 70%,#ff8099 80%,var(--se) 100%);margin-bottom:6px">
+        <div style="position:absolute;top:-4px;left:${rsiPos}%;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;background:var(--tx);border:2px solid var(--bg);box-shadow:0 2px 8px rgba(0,0,0,.6)"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:12px">
+        <span style="color:var(--bu);font-weight:700">Oversold 0–30</span>
+        <span style="color:var(--tx3)">Neutral 30–70</span>
+        <span style="color:var(--se);font-weight:700">Overbought 70–100</span>
+      </div>
+      <div style="font-size:14px;color:${rsiColor};font-weight:700">${rsiLabel}</div>
+    </div>
+
+    <!-- MACD -->
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-weight:700;margin-bottom:8px">MACD — Direction of momentum</div>
+    <div style="background:var(--sur2);border:1px solid var(--bor);border-radius:12px;padding:16px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:13px;color:var(--tx2)">Histogram (${tfLabel})</div>
+        <div style="font-family:var(--font-mono);font-size:20px;font-weight:700;color:${mColor}">${mh>=0?'+':''}${mh.toFixed(5)}</div>
+      </div>
+      ${mxo?`<div style="background:${mh>0?'var(--bu-dim)':'var(--se-dim)'};border:1px solid ${mh>0?'var(--bu-bor)':'var(--se-bor)'};border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;color:${mColor};margin-bottom:10px">CROSSOVER DETECTED — This is a fresh momentum shift signal!</div>`:''}
+      <div style="font-size:14px;color:${mColor};font-weight:700">${mLabel}</div>
+      <div style="font-size:12px;color:var(--tx3);margin-top:8px">Previous bar: ${macdData.prevHist>=0?'+':''}${macdData.prevHist.toFixed(5)} → Now: ${mh>=0?'+':''}${mh.toFixed(5)}</div>
+    </div>
+
+    <!-- ATR -->
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-weight:700;margin-bottom:8px">ATR — How volatile is this timeframe?</div>
+    <div style="background:var(--sur2);border:1px solid var(--bor);border-radius:12px;padding:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:13px;color:var(--tx2)">Avg True Range (14 bars)</div>
+        <div style="font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--tx)">${fmtN(atrVal,dp)}</div>
+      </div>
+      <div style="font-size:13px;color:var(--tx2);line-height:1.7">
+        Each candle moves <strong style="color:var(--tx)">${fmtN(atrVal,dp)}</strong> on average.<br>
+        A move of <strong style="color:var(--pr)">${fmtN(atrVal*1.5,dp)}</strong>+ is considered high volatility on ${tfLabel}.<br>
+        Stop losses and targets are sized using this value.
+      </div>
+    </div>
+  `;
+  $('tfModal').classList.add('open');
+}
+
 </script>
 
 <!-- Weekend Closed Modal for Gold/Silver -->
@@ -1671,5 +1946,17 @@ async function fetchNews() {
   </div>
 </div>
 
+
+<!-- TF Breakdown Modal -->
+<div class="modal-overlay" id="tfModal" onclick="if(event.target===this)closeTfModal()">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-hdr">
+      <div class="modal-title" id="tfModalTitle">Timeframe Breakdown</div>
+      <div class="modal-sub" id="tfModalSub">Why this timeframe is Bull or Bear</div>
+    </div>
+    <div class="modal-body" id="tfModalBody"></div>
+  </div>
+</div>
 </body>
 </html>
