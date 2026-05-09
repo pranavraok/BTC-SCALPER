@@ -806,7 +806,7 @@ const SESSIONS = {
   ],
 };
 
-const CHART_SYM = {btc:'BINANCE:BTCUSDT', gold:'COMEX:GC1!', silver:'COMEX:SI1!'};
+const CHART_SYM = {btc:'BINANCE:BTCUSDT', gold:'OANDA:XAUUSD', silver:'OANDA:XAGUSD'};
 const DP        = {btc:2, gold:2, silver:3};
 const REFRESH   = {btc:30000, gold:60000, silver:60000};
 
@@ -1074,17 +1074,21 @@ async function fetchBTCPrice() {
 }
 
 async function fetchMetalPrice(metal) {
-  // Primary: Yahoo Finance futures — free, no key, real-time spot price
-  const yticker = metal==='gold' ? 'GC%3DF' : 'SI%3DF';
+  // TradingView CFD scanner — returns EXACT same OANDA:XAUUSD/XAGUSD price as the chart
+  const sym = metal==='gold' ? 'OANDA:XAUUSD' : 'OANDA:XAGUSD';
   try {
-    const r = await fetchwt(`https://query2.finance.yahoo.com/v8/finance/chart/${yticker}?interval=1m&range=1d`, 8000);
+    const r = await fetchwt('https://scanner.tradingview.com/cfd/scan', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Origin':'https://www.tradingview.com','Referer':'https://www.tradingview.com/'},
+      body: JSON.stringify({ symbols: { tickers: [sym] }, columns: ['close','bid','ask'] })
+    }, 8000);
     if(r.ok){
-      const j=await r.json();
-      const res=j?.chart?.result?.[0];
-      if(res){ const closes=res.indicators.quote[0].close.filter(Boolean); const p=closes.at(-1); if(p>0) return p; }
+      const j = await r.json();
+      const p = j?.data?.[0]?.d?.[0]; // index 0 = close price
+      if(p > 0) return p;
     }
   } catch(_){}
-  // Fallback: fawazahmed0 CDN — free, no key
+  // Fallback: fawazahmed0 CDN
   const s = metal==='gold'?'xau':'xag';
   try {
     const r2 = await fetchwt(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${s}.json`, 8000);
@@ -1108,60 +1112,52 @@ async function getBTCKlines(interval, limit=200) {
 }
 
 // Yahoo Finance interval mapping: TwelveData '15min'/'1h' -> Yahoo '15m'/'1h'
-function toYahooInterval(iv){ return iv==='15min'?'15m':iv==='1h'?'1h':iv==='5min'?'5m':'15m'; }
-function toYahooRange(iv){ return iv==='1h'?'60d':iv==='15min'?'5d':'2d'; }
-
 async function getMetalKlines(metal, interval, size=120) {
   const key = `${metal}_${interval}`;
   const now = Date.now();
   if(KCACHE[key] && now - KCACHE[key].ts < 60000) return KCACHE[key].data;
 
-  // Yahoo Finance: GC=F = Gold futures, SI=F = Silver futures
-  // Both match OANDA:XAUUSD / XAGUSD prices shown on the TradingView chart
+  // Yahoo Finance GC=F / SI=F — closest free OHLCV source to OANDA spot
   const ticker = metal==='gold' ? 'GC%3DF' : 'SI%3DF';
-  const yiv    = toYahooInterval(interval);
-  const yrange = toYahooRange(interval);
+  const yiv    = interval==='1h' ? '1h' : '15m';
+  const yrange = interval==='1h' ? '60d' : '5d';
   const url    = `https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=${yiv}&range=${yrange}`;
-
   try {
     const r = await fetchwt(url, 12000);
     if(r.ok){
       const j   = await r.json();
       const res = j?.chart?.result?.[0];
       if(res){
-        const ts    = res.timestamp;
-        const q     = res.indicators.quote[0];
+        const ts = res.timestamp;
+        const q  = res.indicators.quote[0];
         const klines = [];
         for(let i=0;i<ts.length;i++){
           const o=q.open[i],h=q.high[i],l=q.low[i],c=q.close[i],v=q.volume?.[i]||0;
           if(c==null||isNaN(c)) continue;
           klines.push([ts[i]*1000, +o||c, +h||c, +l||c, +c, +v]);
         }
-        if(klines.length >= 20){
-          KCACHE[key]={ts:now, data:klines};
-          return klines;
-        }
+        if(klines.length >= 20){ KCACHE[key]={ts:now,data:klines}; return klines; }
       }
     }
   } catch(_){}
 
-  // Fallback: build synthetic daily klines from fawazahmed0 if Yahoo fails
-  const sym  = metal==='gold'?'xau':'xag';
-  const days = Math.max(size, 60);
+  // Fallback: fawazahmed0 daily synthetic candles
+  const sym   = metal==='gold'?'xau':'xag';
+  const days  = Math.max(size, 60);
   const today = new Date();
-  const prices = [];
   const batch = [];
   for(let i=1;i<=days;i++){
     const d=new Date(today); d.setDate(d.getDate()-i);
     const ds=d.toISOString().slice(0,10);
     batch.push(
       fetchwt(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${ds}/v1/currencies/${sym}.json`,5000)
-        .then(r=>r.ok?r.json():null).then(j=>j?{ts:d.getTime(),price:parseFloat(j[sym]['usd'])}:null).catch(()=>null)
+        .then(r=>r.ok?r.json():null)
+        .then(j=>j?{ts:d.getTime(),price:parseFloat(j[sym]['usd'])}:null)
+        .catch(()=>null)
     );
   }
   const results = await Promise.all(batch);
-  results.forEach(r=>{ if(r&&r.price>0) prices.push(r); });
-  prices.sort((a,b)=>a.ts-b.ts);
+  const prices  = results.filter(r=>r&&r.price>0).sort((a,b)=>a.ts-b.ts);
   if(!prices.length) throw new Error('Metal klines unavailable');
   const klines = prices.map(({ts,price})=>{
     const sp=price*0.003;
