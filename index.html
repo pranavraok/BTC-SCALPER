@@ -567,17 +567,17 @@ body::before {
           <div class="tf-pill neut" id="tf5" onclick="showTfModal('5m')" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
             <span class="tf-frame">5 min</span>
             <span class="tf-sig">--</span>
-            <span style="display:block;font-size:9px;color:var(--tx3);margin-top:2px">tap for details</span>
+            <span class="tf-rsi" style="display:block;font-size:10px;color:var(--tx3);margin-top:2px">RSI --</span>
           </div>
           <div class="tf-pill neut" id="tf15" onclick="showTfModal('15m')" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
             <span class="tf-frame">15 min</span>
             <span class="tf-sig">--</span>
-            <span style="display:block;font-size:9px;color:var(--tx3);margin-top:2px">tap for details</span>
+            <span class="tf-rsi" style="display:block;font-size:10px;color:var(--tx3);margin-top:2px">RSI --</span>
           </div>
           <div class="tf-pill neut" id="tf1h" onclick="showTfModal('1h')" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
             <span class="tf-frame">1 Hour</span>
             <span class="tf-sig">--</span>
-            <span style="display:block;font-size:9px;color:var(--tx3);margin-top:2px">tap for details</span>
+            <span class="tf-rsi" style="display:block;font-size:10px;color:var(--tx3);margin-top:2px">RSI --</span>
           </div>
         </div>
       </div>
@@ -1074,18 +1074,18 @@ async function fetchBTCPrice() {
 }
 
 async function fetchMetalPrice(metal) {
-  // TradingView CFD scanner — returns EXACT same OANDA:XAUUSD/XAGUSD price as the chart
+  // Primary: TradingView CFD scanner — exact OANDA:XAUUSD/XAGUSD price matching the chart
   const sym = metal==='gold' ? 'OANDA:XAUUSD' : 'OANDA:XAGUSD';
   try {
     const r = await fetchwt('https://scanner.tradingview.com/cfd/scan', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','Origin':'https://www.tradingview.com','Referer':'https://www.tradingview.com/'},
-      body: JSON.stringify({ symbols: { tickers: [sym] }, columns: ['close','bid','ask'] })
+      method:'POST',
+      headers:{'Content-Type':'application/json','Origin':'https://www.tradingview.com','Referer':'https://www.tradingview.com/'},
+      body: JSON.stringify({ symbols:{ tickers:[sym] }, columns:['close','bid','ask'] })
     }, 8000);
     if(r.ok){
-      const j = await r.json();
-      const p = j?.data?.[0]?.d?.[0]; // index 0 = close price
-      if(p > 0) return p;
+      const j=await r.json();
+      const p=j?.data?.[0]?.d?.[0];
+      if(p>0) return p;
     }
   } catch(_){}
   // Fallback: fawazahmed0 CDN
@@ -1345,82 +1345,147 @@ async function runAlgoBTC(price, sessScore, k5, k15, k1h) {
 }
 
 async function runAlgoMetal(mkt, price, sessScore, k15, k1h) {
-  // GOLD / SILVER algo: session-driven, slower indicators, no volume, 15m & 1h focus
-  // Metals: overbought = 70 (not 65), oversold = 30, session score weighted heavily
-  // No 5m klines used for signal (metals 5m is noisy/sparse), focus on 15m + 1h
-  const c15=k15.map(k=>k[4]),c1h=k1h.map(k=>k[4]);
+  const isGold = mkt === 'gold';
+  const c15 = k15.map(k=>k[4]), c1h = k1h.map(k=>k[4]);
 
-  // RSI — metals use standard 14-period but on 15m + 1h only
-  const rsi15_14=rsi(c15,14),rsi15_7=rsi(c15,7),rsi1h_14=rsi(c1h,14);
-  const rsi5_14=rsi15_14; // alias for shared renderAlgo
+  // ── INSTRUMENT-SPECIFIC PARAMETER SETS ──────────────────────────────
+  // Gold  : slow/monetary, London+NY driven, tight ATR, institutional EMAs
+  // Silver: fast/industrial+speculative, volatile, wider stops, fast EMAs
+  // ────────────────────────────────────────────────────────────────────
+  const P = isGold ? {
+    rsiPeriod:14, rsiOB:68, rsiOS:32, rsiPeriodFast:7,
+    macdFast:15, macdSlow:30, macdSig:9,
+    macdFastF:8, macdSlowF:21, macdSigF:5,
+    bbPeriod:20, bbDev:2.0,
+    emas:[20,50,100,200],
+    atrPeriod:14, atrMult:1.5,
+    adxThresh:22,
+    wTrend:0.28, wRsi:0.27, wMacd:0.14, wBB:0.14, wSess:0.17,
+    sessionNote:'Gold follows London (08:00 UTC) & NY (13:30 UTC) opens — highest precision during these windows.',
+  } : {
+    rsiPeriod:9,  rsiOB:75, rsiOS:25, rsiPeriodFast:5,
+    macdFast:10, macdSlow:21, macdSig:7,
+    macdFastF:6, macdSlowF:13, macdSigF:5,
+    bbPeriod:14, bbDev:2.2,
+    emas:[9,21,50,200],
+    atrPeriod:14, atrMult:2.5,
+    adxThresh:28,
+    wTrend:0.22, wRsi:0.30, wMacd:0.18, wBB:0.13, wSess:0.17,
+    sessionNote:'Silver peaks at London/NY overlap (13:00-16:00 UTC). Also watch Asian session (23:00-08:00 UTC) for China industrial demand spikes.',
+  };
 
-  // MACD — metals use slower periods (not standard 12/26/9, use 15/30/9 for metals)
-  function macdMetal(closes) {
-    const k15m=2/16,k30m=2/31,k9m=2/10;
-    let e15=closes[0],e30=closes[0];
-    const fast=[],slow=[];
+  // ── RSI — dual period (main + fast confirmation) ─────────────────────
+  const rsi15_main=rsi(c15,P.rsiPeriod), rsi15_fast=rsi(c15,P.rsiPeriodFast);
+  const rsi1h_main=rsi(c1h,P.rsiPeriod);
+  const rsi5_14=rsi15_main, rsi15_14=rsi15_main, rsi15_7=rsi15_fast, rsi1h_14=rsi1h_main;
+
+  // ── MACD — custom periods per instrument ─────────────────────────────
+  function macdCustom(closes,fast,slow,sig){
+    const kF=2/(fast+1),kS=2/(slow+1),kSig=2/(sig+1);
+    let eF=closes[0],eS=closes[0],sigV=0;
+    const hist=[],line=[];
     for(let i=0;i<closes.length;i++){
-      e15=closes[i]*k15m+e15*(1-k15m);
-      e30=closes[i]*k30m+e30*(1-k30m);
-      fast.push(e15); slow.push(e30);
+      eF=closes[i]*kF+eF*(1-kF); eS=closes[i]*kS+eS*(1-kS);
+      const m=eF-eS; line.push(m); sigV=m*kSig+sigV*(1-kSig); hist.push(m-sigV);
     }
-    const line=fast.map((v,i)=>v-slow[i]);
-    let sig=line[0];
-    const hist=line.map(v=>{ sig=v*k9m+sig*(1-k9m); return v-sig; });
     const last=hist.length-1;
-    return {line:line[last],signal:sig,hist:hist[last],prevHist:hist[last-1]||0};
+    return {line:line[last],signal:sigV,hist:hist[last],prevHist:hist[Math.max(last-1,0)]||0};
   }
-  const macd15=macdMetal(c15),macd1h=macdMetal(c1h);
-  const macd5=macd15; // alias
+  const macd15=macdCustom(c15,P.macdFast,P.macdSlow,P.macdSig);
+  const macd1h=macdCustom(c1h,P.macdFast,P.macdSlow,P.macdSig);
+  const macd15fast=macdCustom(c15,P.macdFastF,P.macdSlowF,P.macdSigF);
+  const macd5=macd15;
+  const macdXo15=(macd15.hist>0)!==(macd15.prevHist>0)?0.25*(macd15.hist>0?1:-1):0;
 
-  // Bollinger Bands — metals use wider 20-period on 1h (more meaningful)
-  const bb15=bbands(c15,20),bb1h=bbands(c1h,20);
-
-  // ATR — metals: heavier weight on 1h, ignore 5m
-  const a15=atr(k15,14),a1h=atr(k1h,14);
-  const a5=a15; // alias
-  const bATR=a15*0.45+a1h*0.55;
-
-  // EMA — metals use slower stacks: 20/50/100/200 on 1h
-  function emaStackMetal(closes) {
-    const c=closes.slice(-220);
-    const e20=ema(c.slice(-80),20),e50=ema(c.slice(-150),50),e100=ema(c.slice(-200),100),e200=ema(c,200);
-    const bull20_50=e20>e50,bull50_100=e50>e100,bull100_200=e100>e200;
-    const aligned=bull20_50&&bull50_100&&bull100_200;
-    const bearAligned=!bull20_50&&!bull50_100&&!bull100_200;
-    const score=((bull20_50?1:0)+(bull50_100?1:0)+(bull100_200?1:0)-1.5)/1.5;
-    return {e9:e20,e21:e50,e50:e100,e200,last:c.at(-1),score,aligned,bearAligned,bull9_21:bull20_50,bull21_50:bull50_100,bull50_200:bull100_200};
+  // ── Bollinger Bands — instrument-specific periods ─────────────────────
+  function bbandsCustom(closes,period,dev){
+    const sl=closes.slice(-period);
+    const mn=sl.reduce((a,b)=>a+b,0)/period;
+    const sd=Math.sqrt(sl.reduce((s,v)=>s+(v-mn)**2,0)/period);
+    const mid=mn,upper=mn+dev*sd,lower=mn-dev*sd,last=closes.at(-1);
+    const pct=sd>0?clamp((last-lower)/(upper-lower),0,1):0.5;
+    const bw=sd>0?(upper-lower)/mid:0;
+    return {mid,upper,lower,pct,bw};
   }
-  const es15=emaStackMetal(c15),es1h=emaStackMetal(c1h);
-  const es5=es15; // alias
+  const bb15=bbandsCustom(c15,P.bbPeriod,P.bbDev);
+  const bb1h=bbandsCustom(c1h,P.bbPeriod,P.bbDev);
 
-  // Metals algo weights: trend 30%, rsi 30%, macd 12%, bb 15%, session 13%
-  // No volume scoring — metal volumes from API are unreliable
-  const trendScore=es15.score*0.45+es1h.score*0.55;
-  // Metals RSI: oversold <35, overbought >65 on 15m; on 1h same thresholds
-  const rsiScore=(rsi15_14-50)/50*0.45+(rsi1h_14-50)/50*0.55;
-  const ms15=macd15.hist>0?1:macd15.hist<0?-1:0,ms1h=macd1h.hist>0?1:macd1h.hist<0?-1:0;
+  // ── ATR — instrument-specific ─────────────────────────────────────────
+  const a15=atr(k15,P.atrPeriod), a1h=atr(k1h,P.atrPeriod), a5=a15;
+  const bATR=isGold?a15*0.45+a1h*0.55:a15*0.35+a1h*0.65;
+
+  // ── EMA Stack — different periods per instrument ──────────────────────
+  function emaStackCustom(closes,periods){
+    const [e1p,e2p,e3p,e4p]=periods, need=e4p+20, c=closes.slice(-need);
+    const e1=ema(c.slice(-e1p-20),e1p),e2=ema(c.slice(-e2p-20),e2p);
+    const e3=ema(c.slice(-e3p-20),e3p),e4=ema(c,e4p);
+    const b12=e1>e2,b23=e2>e3,b34=e3>e4;
+    const aligned=b12&&b23&&b34,bearAligned=!b12&&!b23&&!b34;
+    const score=((b12?1:0)+(b23?1:0)+(b34?1:0)-1.5)/1.5;
+    return {e9:e1,e21:e2,e50:e3,e200:e4,last:closes.at(-1),score,aligned,bearAligned,bull9_21:b12,bull21_50:b23,bull50_200:b34};
+  }
+  const es15=emaStackCustom(c15,P.emas), es1h=emaStackCustom(c1h,P.emas), es5=es15;
+
+  // ── ADX — trend strength filter (ranging market penalty) ─────────────
+  function simpleADX(klines,period){
+    if(klines.length<period+2) return 25;
+    let dmP=0,dmN=0,trSum=0;
+    for(let i=klines.length-period;i<klines.length;i++){
+      const [,h,l]=klines[i],[,ph,pl]=klines[i-1]||klines[i];
+      const uMove=h-ph,dMove=pl-l;
+      dmP+=(uMove>dMove&&uMove>0)?uMove:0;
+      dmN+=(dMove>uMove&&dMove>0)?dMove:0;
+      const tr=Math.max(h-l,Math.abs(h-(klines[i-1]?.[4]||l)),Math.abs(l-(klines[i-1]?.[4]||h)));
+      trSum+=tr;
+    }
+    if(!trSum) return 25;
+    const pDI=100*dmP/trSum,nDI=100*dmN/trSum,diSum=pDI+nDI;
+    return diSum>0?100*Math.abs(pDI-nDI)/diSum:0;
+  }
+  const adx15=simpleADX(k15,P.atrPeriod), adx1h=simpleADX(k1h,P.atrPeriod);
+  const adxOK=adx15>P.adxThresh||adx1h>P.adxThresh;
+
+  // ── Gold-Silver Ratio proxy (EMA alignment divergence) ───────────────
+  const gsrProxy=isGold?(es1h.aligned?0.05:es1h.bearAligned?-0.05:0):(es1h.aligned?0.03:es1h.bearAligned?-0.03:0);
+
+  // ── Session — Silver gets Asian session bonus ─────────────────────────
+  const effectiveSess=isGold?sessScore:Math.min(1,sessScore*1.10);
+
+  // ── RSI divergence — fast vs main signals momentum shift ─────────────
+  const rsiFastMainDiv=(rsi15_fast-50)*(rsi15_main-50)<0;
+  const rsiMomentumBoost=rsiFastMainDiv?0.12*(rsi15_fast>50?1:-1):0;
+
+  // ── SCORING ENGINE ────────────────────────────────────────────────────
+  const trendScore=es15.score*0.40+es1h.score*0.60;
+  const rsiNorm15=(rsi15_main-50)/50, rsiNorm1h=(rsi1h_main-50)/50;
+  const rsiScore=rsiNorm15*0.45+rsiNorm1h*0.55+rsiMomentumBoost;
+  const ms15=macd15.hist>0?1:macd15.hist<0?-1:0;
+  const ms15f=macd15fast.hist>0?1:macd15fast.hist<0?-1:0;
+  const ms1h=macd1h.hist>0?1:macd1h.hist<0?-1:0;
   const ms5=ms15;
-  const macdXo15=(macd15.hist>0)!==(macd15.prevHist>0)?0.2*ms15:0;
-  const macdScore=(ms15*0.4+ms1h*0.6+macdXo15)/1.2;
+  const macdScore=(ms15*0.40+ms1h*0.45+ms15f*0.15+macdXo15)/1.15;
   const bbScore=(bb15.pct-0.5)*2*0.35+(bb1h.pct-0.5)*2*0.65;
-  // Session score is critical for metals (London/NY sessions define gold moves)
-  const sessS=(sessScore-0.5)*0.6;
+  const sessS=(effectiveSess-0.5)*0.5;
+  const raw=trendScore*P.wTrend+rsiScore*P.wRsi+macdScore*P.wMacd+bbScore*P.wBB+sessS*P.wSess+gsrProxy;
+  const bias=Math.tanh(raw*2.5)*45;
+  let buy=Math.round(clamp(50+bias,5,95)), sell=100-buy;
 
-  const raw=trendScore*0.30+rsiScore*0.30+macdScore*0.12+bbScore*0.15+sessS*0.13;
-  const bias=Math.tanh(raw*2.2)*45;
-  let buy=Math.round(clamp(50+bias,5,95)),sell=100-buy;
-
+  // ── CONFIDENCE ENGINE ─────────────────────────────────────────────────
   const diff=Math.abs(buy-sell);
   const allAligned=(es15.aligned&&es1h.aligned)||(es15.bearAligned&&es1h.bearAligned);
-  const rsiExtreme=Math.abs(rsi15_14-50)>18||Math.abs(rsi1h_14-50)>18;
-  const macdAligned=ms15===ms1h;
-  // Metals: session score heavily boosts confidence when London/NY are open
-  const sessBoost=sessScore>0.5?12:sessScore>0.3?6:0;
-  const conf=Math.round(clamp(45+diff*0.55+(allAligned?12:0)+(rsiExtreme?6:0)+(macdAligned?5:0)+sessBoost,42,96));
-  const clarity=diff>=30?'Very clear':diff>=18?'Clear':diff>=8?'Moderate':'Balanced';
+  const rsiExtreme=rsi15_main<P.rsiOS||rsi15_main>P.rsiOB||rsi1h_main<P.rsiOS||rsi1h_main>P.rsiOB;
+  const macdAligned=ms15===ms1h, macdFastConf=ms15f===ms15;
+  const adxBoost=adxOK?8:-5;
+  const bbExtreme=bb1h.pct<0.10||bb1h.pct>0.90;
+  const sessBoost=effectiveSess>0.55?14:effectiveSess>0.35?7:0;
+  const volPenalty=(!isGold&&!adxOK)?-6:0;
+  const conf=Math.round(clamp(
+    40+diff*0.60+(allAligned?14:0)+(rsiExtreme?8:0)+(macdAligned?6:0)+(macdFastConf?4:0)+(bbExtreme?5:0)+adxBoost+sessBoost+volPenalty,
+    42,96));
+  const clarity=diff>=32?'Very clear':diff>=20?'Clear':diff>=10?'Moderate':'Balanced';
   const dominant=buy>=sell?'BUY':'SELL';
 
+  // ── ENTRY / LEVELS ────────────────────────────────────────────────────
   const {res:r15,sup:s15}=swingLevels(k15,price,100,3);
   const {res:r1h,sup:s1h}=swingLevels(k1h,price,80,3);
   const allRes=[...new Set([...r15,...r1h])].sort((a,b)=>a-b);
@@ -1430,19 +1495,24 @@ async function runAlgoMetal(mkt, price, sessScore, k15, k1h) {
   const buySetup=buildSetup(buyEntry,'buy',allRes,allSup,bATR);
   const sellSetup=buildSetup(sellEntry,'sell',allRes,allSup,bATR);
 
-  const mktName=mkt==='gold'?'Gold (XAU/USD)':'Silver (XAG/USD)';
-  const sessionNote=sessScore>0.55?'London/NY session is OPEN — highest volume, most reliable signals.':sessScore>0.3?'Moderate session activity.':'Low session activity — signals are less reliable right now.';
+  // ── REASONS ───────────────────────────────────────────────────────────
+  const mktName=isGold?'Gold (XAU/USD)':'Silver (XAG/USD)';
+  const emaLabels=P.emas.map(e=>`EMA${e}`).join('/');
+  const sessionNote=effectiveSess>0.55?`<strong style="color:var(--up);">Prime session window OPEN</strong> — signals carry highest weight.`:effectiveSess>0.35?'Moderate session activity — signals are reasonably reliable.':`<strong style="color:var(--dn);">Low session activity</strong> — signals less reliable right now.`;
+  const adxLabel=adxOK?`<strong style="color:var(--up);">ADX confirms trend (15m:${adx15.toFixed(0)}, 1h:${adx1h.toFixed(0)})</strong> — not a ranging market.`:`<strong style="color:var(--dn);">ADX low (15m:${adx15.toFixed(0)}, 1h:${adx1h.toFixed(0)}) — possible ranging market.</strong> Threshold: ${P.adxThresh}.`;
   const reasons=[
-    `<strong>Trend (EMA 20/50/100/200)</strong> — 15m: ${es15.aligned?'Fully Bullish':es15.bearAligned?'Fully Bearish':'Mixed'} · 1h: ${es1h.aligned?'Fully Bullish':es1h.bearAligned?'Fully Bearish':'Mixed'}. ${allAligned?'Both timeframes agree — strong directional signal.':'Timeframes are mixed — wait for a clearer setup.'}`,
-    `<strong>RSI Momentum</strong> — 15m: ${rsi15_14.toFixed(0)} (fast RSI-7: ${rsi15_7.toFixed(0)}) · 1h: ${rsi1h_14.toFixed(0)}. ${rsi15_14<35?'15m oversold — look for a buy':rsi15_14>65?'15m overbought — look for a sell':rsi1h_14<35?'1h oversold — bullish bias':rsi1h_14>65?'1h overbought — bearish bias':'RSI is neutral — no extreme reading.'}`,
-    `<strong>MACD (15/30/9 — tuned for metals)</strong> — 15m histogram: ${macd15.hist>0?'+':''}${macd15.hist.toFixed(4)} ${macd15.hist>0?'(Bullish)':'(Bearish)'}${macdXo15!==0?' — Crossover detected!':''} · 1h: ${macd1h.hist>0?'Bullish':'Bearish'}.`,
-    `<strong>Bollinger Bands</strong> — 15m position: ${(bb15.pct*100).toFixed(0)}% · 1h position: ${(bb1h.pct*100).toFixed(0)}%. ${bb1h.pct<0.15?'1h near lower band — potential reversal up':bb1h.pct>0.85?'1h near upper band — potential reversal down':'Price within normal range.'}`,
-    `<strong>Session Score</strong> — ${(sessScore*100).toFixed(0)}%. ${sessionNote} For ${mktName}, the London Open (8am UTC) and NY Open (1:30pm UTC) are the most important trading windows.`,
-    `<strong>Volatility (ATR)</strong> — 15m ATR: ${fmtN(a15,2)} · 1h ATR: ${fmtN(a1h,2)} · Blended: ${fmtN(bATR,2)}. Metals have slower, smoother moves compared to crypto — targets and stops reflect this.`,
-    `<strong>Entry Levels</strong> — BUY entry near: ${fmtN(buyEntry,DP[CUR]||2)} (near support) · SELL entry near: ${fmtN(sellEntry,DP[CUR]||2)} (near resistance).`,
+    `<strong>EMA Stack (${emaLabels}) — ${isGold?'Institutional':'Fast-response'} trend bias</strong> — 15m: ${es15.aligned?'Fully Bullish ':es15.bearAligned?'Fully Bearish ':'Mixed '} · 1h: ${es1h.aligned?'Fully Bullish ':es1h.bearAligned?'Fully Bearish ':'Mixed '}. ${allAligned?'<strong>Both timeframes agree</strong> — high-conviction signal.':'Timeframes mixed — wait for alignment before entering.'}`,
+    `<strong>RSI (${P.rsiPeriod}-period, OB:${P.rsiOB}/OS:${P.rsiOS} — ${isGold?'Standard':'Volatility-adjusted'} for ${mktName})</strong> — 15m: ${rsi15_main.toFixed(1)} (fast ${P.rsiPeriodFast}-RSI: ${rsi15_fast.toFixed(1)}) · 1h: ${rsi1h_main.toFixed(1)}. ${rsi15_main<P.rsiOS?`<strong style="color:var(--up);">15m OVERSOLD — high-probability buy zone</strong>`:rsi15_main>P.rsiOB?`<strong style="color:var(--dn);">15m OVERBOUGHT — high-probability sell zone</strong>`:rsi1h_main<P.rsiOS?'1h oversold — bullish bias':rsi1h_main>P.rsiOB?'1h overbought — bearish bias':'RSI neutral.'} ${rsiFastMainDiv?'<em> Fast RSI diverging from main — momentum shift detected.</em>':''}`,
+    `<strong>MACD (${P.macdFast}/${P.macdSlow}/${P.macdSig} main + ${P.macdFastF}/${P.macdSlowF}/${P.macdSigF} fast confirm)</strong> — Main 15m: ${macd15.hist>0?'<strong style="color:var(--up);">Bullish</strong>':'<strong style="color:var(--dn);">Bearish</strong>'} hist:${macd15.hist.toFixed(4)}${macdXo15!==0?' <strong> CROSSOVER!</strong>':''} · Fast confirm: ${ms15f===ms15?' Agrees':' Diverging'} · 1h: ${macd1h.hist>0?'Bullish':'Bearish'}.`,
+    `<strong>Bollinger Bands (${P.bbPeriod}-period, ${P.bbDev}σ${isGold?'':' — wide-band for silver volatility'})</strong> — 15m: ${(bb15.pct*100).toFixed(0)}% · 1h: ${(bb1h.pct*100).toFixed(0)}%. ${bb1h.pct<0.10?'<strong style="color:var(--up);">1h near lower band — reversal zone UP</strong>':bb1h.pct>0.90?'<strong style="color:var(--dn);">1h near upper band — reversal zone DOWN</strong>':bb1h.pct<0.30?'1h lower half — mild bullish lean':bb1h.pct>0.70?'1h upper half — mild bearish lean':'Within normal BB range.'} BW:${(bb15.bw*100).toFixed(2)}% (${bb15.bw>0.04?'Expanding':'Tight range'}).`,
+    `<strong>ADX Trend Filter</strong> — ${adxLabel} ${isGold?'Gold needs ADX>22 for directional trade.':'Silver needs ADX>28 to filter industrial noise.'}`,
+    `<strong>Session — ${mktName}</strong> — ${(effectiveSess*100).toFixed(0)}%. ${sessionNote} ${P.sessionNote}`,
+    `<strong>Volatility (ATR-${P.atrPeriod}, ${P.atrMult}x SL mult)</strong> — 15m:${fmtN(a15,2)} · 1h:${fmtN(a1h,2)} · Blended:${fmtN(bATR,2)}. ${isGold?'Gold uses 1.5x ATR stops (steady metal).':'Silver uses 2.5x ATR — 2-3x more volatile, wider stops REQUIRED.'} BUY entry≈${fmtN(buyEntry,DP[CUR]||2)} · SELL entry≈${fmtN(sellEntry,DP[CUR]||2)}.`,
   ];
-  const vr5=1,vr15=1; // volume N/A for metals from this API
-  return {buy,sell,conf,clarity,dominant,bATR,buySetup,sellSetup,rsi5_14,rsi15_14,rsi15_7,rsi1h_14,macd15,macd1h,bb15,vr15,vr5,es5,es15,es1h,a5,a15,a1h,sessScore,reasons,macdXo15,ms5,ms15,ms1h};
+  const vr5=1,vr15=1;
+  return {buy,sell,conf,clarity,dominant,bATR,buySetup,sellSetup,rsi5_14,rsi15_14,rsi15_7,rsi1h_14,macd15,macd1h,bb15,vr15,vr5,es5,es15,es1h,a5,a15,a1h,sessScore,reasons,macdXo15,ms5,ms15,ms1h,
+    rsiOB:P.rsiOB, rsiOS:P.rsiOS,
+    ema1:P.emas[0], ema2:P.emas[1], ema3:P.emas[2], ema4:P.emas[3]};
 }
 
 async function runAlgo(mkt, price, sessScore) {
@@ -1477,25 +1547,26 @@ function resetUI() {
   ['tf5','tf15','tf1h'].forEach(id=>{ const el=$(id); el.className='tf-pill neut'; el.querySelector('.tf-sig').textContent='--'; });
 }
 
-function setTfPill(id, score) {
+function setTfPill(id, score, rsiVal) {
   const el = $(id);
-  const bull = score > 0;
   el.className = `tf-pill ${score > 0.2 ? 'bull' : score < -0.2 ? 'bear' : 'neut'}`;
-  el.querySelector('.tf-sig').textContent = score > 0.2 ? ' Bull' : score < -0.2 ? ' Bear' : '– Neut';
+  el.querySelector('.tf-sig').textContent = score > 0.2 ? 'Bull' : score < -0.2 ? 'Bear' : 'Neut';
+  const rsiEl = el.querySelector('.tf-rsi');
+  if(rsiEl && rsiVal !== undefined) rsiEl.textContent = 'RSI ' + rsiVal.toFixed(1);
 }
 
 function renderAlgo(r, dp) {
   const dom = r.dominant;
   const bc = $('biasCard');
   bc.className = `bias-card ${dom==='BUY'?'buy':dom==='SELL'?'sell':'neutral'}`;
-  $('biasIcon').textContent = dom==='BUY' ? '' : dom==='SELL' ? '' : '–';
+  $('biasIcon').textContent = dom==='BUY' ? '▲' : dom==='SELL' ? '▼' : '–';
   $('biasDir').textContent = dom;
   $('biasLabel').textContent = `${r.clarity} signal · ATR ${fmtN(r.bATR,2)}`;
   $('confNum').textContent = r.conf + '%';
 
-  setTfPill('tf5',  r.es5.score);
-  setTfPill('tf15', r.es15.score);
-  setTfPill('tf1h', r.es1h.score);
+  setTfPill('tf5',  r.es5.score,  r.rsi5_14);
+  setTfPill('tf15', r.es15.score, r.rsi15_14);
+  setTfPill('tf1h', r.es1h.score, r.rsi1h_14);
 
   $('buyPct').textContent  = `${r.buy}%`;
   $('sellPct').textContent = `${r.sell}%`;
@@ -1509,30 +1580,65 @@ function renderAlgo(r, dp) {
   $('bS1').textContent=fmtN(B.s1,dp);       $('sS1').textContent=fmtN(S.s1,dp);
   $('bS2').textContent=fmtN(B.s2,dp);       $('sS2').textContent=fmtN(S.s2,dp);
 
-  // Indicators
-  const rc = v => v<35?'bear':v>65?'bull':'neut';
+  // ── Dynamic thresholds from algo result (instrument-aware) ──
+  // r.p holds the parameter set passed through from runAlgoMetal/runAlgo
+  const rsiOB  = r.rsiOB  || 65;
+  const rsiOS  = r.rsiOS  || 35;
+  const ema1   = r.ema1   || 9;
+  const ema2   = r.ema2   || 21;
+  const ema3   = r.ema3   || 50;
+  const ema4   = r.ema4   || 200;
+
   function setInd(valId, subId, val, cls, sub) {
     const el = $(valId);
     el.textContent = val;
     el.className = `ind-val ${cls}`;
     if(subId) { const s=$(subId); s.textContent=sub; s.className=`ind-sub ${cls}`; }
   }
+
+  // RSI — use instrument OB/OS thresholds
+  const rc = v => v < rsiOS ? 'bear' : v > rsiOB ? 'bull' : 'neut';
   const rsi14c = rc(r.rsi15_14), rsi7c = rc(r.rsi15_7);
-  setInd('iRsi','iRsiSub', r.rsi15_14.toFixed(1), rsi14c, r.rsi15_14<35?'Oversold':r.rsi15_14>65?'Overbought':'Neutral');
-  setInd('iRsi7','iRsi7Sub', r.rsi15_7.toFixed(1), rsi7c, r.rsi15_7<30?'Extreme OS':r.rsi15_7>70?'Extreme OB':'Neutral');
+  setInd('iRsi','iRsiSub',
+    r.rsi15_14.toFixed(1), rsi14c,
+    r.rsi15_14 < rsiOS ? `Oversold (<${rsiOS})` : r.rsi15_14 > rsiOB ? `Overbought (>${rsiOB})` : 'Neutral'
+  );
+  setInd('iRsi7','iRsi7Sub',
+    r.rsi15_7.toFixed(1), rsi7c,
+    r.rsi15_7 < (rsiOS-5) ? 'Extreme OS' : r.rsi15_7 > (rsiOB+5) ? 'Extreme OB' : 'Neutral'
+  );
+
+  // MACD
   const mh=r.macd15.hist, mxo=(r.macd15.hist>0)!==(r.macd15.prevHist>0);
-  setInd('iMacd','iMacdSub', (mh>=0?'+':'')+mh.toFixed(4), mh>0?'bull':'bear', mxo?' Crossover':mh>0?'Bullish':'Bearish');
+  setInd('iMacd','iMacdSub', (mh>=0?'+':'')+mh.toFixed(4), mh>0?'bull':'bear', mxo?'Crossover':mh>0?'Bullish':'Bearish');
+
+  // BB
   const bbp=r.bb15.pct, bb=r.bb15;
   const bbCls=bbp<0.2?'bull':bbp>0.8?'bear':'neut';
   const bbSub=bbp<0.15?`Lower ${fmtN(bb.lower,dp)} — Bounce`:bbp>0.85?`Upper ${fmtN(bb.upper,dp)} — Reversal`:`Mid ${fmtN(bb.mid,dp)} — Neutral`;
   setInd('iBb','iBbSub', (bbp*100).toFixed(0)+'%', bbCls, bbSub);
+
+  // ATR
   setInd('iAtr',null, fmtN(r.bATR,2), 'neut');
+
+  // Volume
   setInd('iVol','iVolSub', r.vr15.toFixed(2)+'×', r.vr15>1.2?'bull':r.vr15<0.8?'bear':'neut', r.vr15>1.2?'High volume':r.vr15<0.8?'Low volume':'Normal');
-  setInd('iEma','iEmaSub', r.es15.bull9_21?'9 > 21 ':'9 < 21 ', r.es15.bull9_21?'bull':'bear', r.es15.bull21_50?'21 > 50 ':'21 < 50 ');
-  setInd('iEma2','iEma2Sub', r.es1h.bull50_200?'50 > 200 ':'50 < 200 ', r.es1h.bull50_200?'bull':'bear', r.es1h.aligned?'All bullish':r.es1h.bearAligned?'All bearish':'Mixed');
+
+  // EMA — instrument-specific labels
+  setInd('iEma','iEmaSub',
+    r.es15.bull9_21 ? `${ema1} > ${ema2} ↑` : `${ema1} < ${ema2} ↓`,
+    r.es15.bull9_21 ? 'bull' : 'bear',
+    r.es15.bull21_50 ? `${ema2} > ${ema3} ↑` : `${ema2} < ${ema3} ↓`
+  );
+  setInd('iEma2','iEma2Sub',
+    r.es1h.bull50_200 ? `${ema3} > ${ema4} ↑` : `${ema3} < ${ema4} ↓`,
+    r.es1h.bull50_200 ? 'bull' : 'bear',
+    r.es1h.aligned ? 'All bullish ' : r.es1h.bearAligned ? 'All bearish ' : 'Mixed '
+  );
+
+  // Session
   setInd('iSess','iSessSub', (r.sessScore*100).toFixed(0)+'%', r.sessScore>0.5?'bull':r.sessScore>0.2?'neut':'bear', r.sessScore>0.6?'Strong overlap':r.sessScore>0.3?'Active':'Low activity');
 
-  // Store for indicator modal
   window._lastR = r;
   window._lastDP = dp;
 }
