@@ -2069,6 +2069,205 @@ function showTfModal(tf) {
   $('tfModal').classList.add('open');
 }
 
+
+// ═══════════════════════════════════════════════
+// FULL TRADE ANALYSIS — BTC / Gold / Silver
+// ═══════════════════════════════════════════════
+function showTradeAnalysis() {
+  const r  = window._lastR;
+  const dp = window._lastDP || 2;
+  const mkt = CUR;
+
+  if (!r) {
+    alert('Run analysis first by selecting a market.');
+    return;
+  }
+
+  // ── Instrument meta ──────────────────────────
+  const isBTC    = mkt === 'btc';
+  const isGold   = mkt === 'gold';
+  const isSilver = mkt === 'silver';
+  const mktName  = isBTC ? 'Bitcoin (BTC/USDT)' : isGold ? 'Gold (XAU/USD)' : 'Silver (XAG/USD)';
+  const rsiOB    = r.rsiOB  || (isBTC ? 70 : isGold ? 68 : 75);
+  const rsiOS    = r.rsiOS  || (isBTC ? 30 : isGold ? 32 : 25);
+  const ema1     = r.ema1   || (isBTC ? 9  : isGold ? 20 : 9);
+  const ema2     = r.ema2   || (isBTC ? 21 : isGold ? 50 : 21);
+  const ema3     = r.ema3   || (isBTC ? 50 : isGold ? 100: 50);
+  const ema4     = r.ema4   || 200;
+
+  // ── RSI labels ───────────────────────────────
+  function rsiLabel(v, ob, os) {
+    if (v < os)         return `<span class="bear">Oversold (${v.toFixed(1)}) — potential reversal UP</span>`;
+    if (v > ob)         return `<span class="bull" style="color:var(--se)">Overbought (${v.toFixed(1)}) — potential reversal DOWN</span>`;
+    if (v < os + 10)    return `<span style="color:var(--bu)">Approaching oversold (${v.toFixed(1)}) — watch for bounce</span>`;
+    if (v > ob - 10)    return `<span style="color:var(--se)">Approaching overbought (${v.toFixed(1)}) — watch for rejection</span>`;
+    return `<span class="neut">Neutral (${v.toFixed(1)}) — no extreme reading</span>`;
+  }
+
+  // ── EMA meaning ──────────────────────────────
+  function emaRow(name, bull, fastN, slowN, extra) {
+    const dir  = bull ? 'ABOVE' : 'BELOW';
+    const cls  = bull ? 'color:var(--bu)' : 'color:var(--se)';
+    const meaning = bull
+      ? `${fastN} crossed above ${slowN} — ${extra} uptrend active`
+      : `${fastN} crossed below ${slowN} — ${extra} downtrend active`;
+    return `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--bor)">
+      <div>
+        <div style="font-size:13px;font-weight:700;${cls}">EMA${fastN} ${dir} EMA${slowN}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:2px">${meaning}</div>
+      </div>
+      <div style="font-size:11px;font-weight:700;${cls};white-space:nowrap;margin-left:8px">${bull ? 'BULL' : 'BEAR'}</div>
+    </div>`;
+  }
+
+  // ── Section builder ──────────────────────────
+  function section(title, color, html) {
+    return `<div style="background:var(--sur2);border:1.5px solid var(--bor);border-radius:14px;padding:14px;">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:${color};margin-bottom:10px">${title}</div>
+      ${html}
+    </div>`;
+  }
+
+  function row(label, val, cls='') {
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--bor)">
+      <span style="font-size:13px;color:var(--tx2)">${label}</span>
+      <span style="font-family:var(--font-mono);font-size:13px;font-weight:700;${cls}">${val}</span>
+    </div>`;
+  }
+
+  function badge(ok, text) {
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0">
+      <div style="width:18px;height:18px;border-radius:50%;background:${ok?'var(--bu)':'var(--se)'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0">${ok?'+':'-'}</div>
+      <span style="font-size:13px;color:var(--tx)">${text}</span>
+    </div>`;
+  }
+
+  // ── 1. RSI Section ───────────────────────────
+  const rsi5v  = r.rsi5_14  || r.rsi15_14;
+  const rsi15v = r.rsi15_14;
+  const rsi1hv = r.rsi1h_14;
+  const rsiSection = section('RSI — Momentum Across All Timeframes', 'var(--bu)',
+    `${row(`5m  RSI-${isBTC?14:r.rsiPeriod||14}`, rsi5v.toFixed(1), rsi5v<rsiOS?'color:var(--bu)':rsi5v>rsiOB?'color:var(--se)':'color:var(--tx2)')}
+     <div style="font-size:11px;color:var(--tx3);padding:2px 0 6px">${rsiLabel(rsi5v,rsiOB,rsiOS).replace(/class="[^"]*"/g,'')}</div>
+     ${row(`15m RSI-${isBTC?14:r.rsiPeriod||14}`, rsi15v.toFixed(1), rsi15v<rsiOS?'color:var(--bu)':rsi15v>rsiOB?'color:var(--se)':'color:var(--tx2)')}
+     <div style="font-size:11px;color:var(--tx3);padding:2px 0 6px">${rsiLabel(rsi15v,rsiOB,rsiOS).replace(/class="[^"]*"/g,'')}</div>
+     ${row(`1h  RSI-${isBTC?14:r.rsiPeriod||14}`, rsi1hv.toFixed(1), rsi1hv<rsiOS?'color:var(--bu)':rsi1hv>rsiOB?'color:var(--se)':'color:var(--tx2)')}
+     <div style="font-size:11px;color:var(--tx3);padding:2px 0 6px">${rsiLabel(rsi1hv,rsiOB,rsiOS).replace(/class="[^"]*"/g,'')}</div>
+     <div style="margin-top:6px;font-size:11px;color:var(--tx3)">Thresholds for ${mktName}: OB>${rsiOB} / OS<${rsiOS}</div>`
+  );
+
+  // ── 2. MACD Section ──────────────────────────
+  const mh15 = r.macd15.hist, mh1h = r.macd1h.hist;
+  const macdXo = (r.macd15.hist>0) !== (r.macd15.prevHist>0);
+  const macdAgree = (mh15>0) === (mh1h>0);
+  const macdSection = section('MACD — Trend Momentum', 'var(--se)',
+    `${row('15m Histogram', (mh15>=0?'+':'')+mh15.toFixed(5), mh15>0?'color:var(--bu)':'color:var(--se)')}
+     <div style="font-size:11px;color:var(--tx3);padding:2px 0 6px">${mh15>0?'Bullish momentum — histogram above zero line.':'Bearish momentum — histogram below zero line.'}${macdXo?' <strong style="color:var(--bu)">Crossover just happened!</strong>':''}</div>
+     ${row('1h  Histogram', (mh1h>=0?'+':'')+mh1h.toFixed(5), mh1h>0?'color:var(--bu)':'color:var(--se)')}
+     <div style="font-size:11px;color:var(--tx3);padding:2px 0 6px">${mh1h>0?'Higher timeframe also bullish — stronger signal.':'Higher timeframe bearish — trend pressure.'}</div>
+     ${row('Timeframe Agreement', macdAgree?'Both Agree':'Diverging', macdAgree?'color:var(--bu)':'color:var(--se)')}
+     <div style="font-size:11px;color:var(--tx3);padding:2px 0 6px">${macdAgree?'15m and 1h MACD agree — confluence signal, higher reliability.':'15m and 1h MACD disagree — conflicting signals, lower reliability.'}</div>
+     <div style="margin-top:6px;font-size:11px;color:var(--tx3)">Periods used for ${mktName}: ${isBTC?'12/26/9 (standard)':isGold?'15/30/9 main + 8/21/5 fast':'10/21/7 main + 6/13/5 fast'}</div>`
+  );
+
+  // ── 3. EMA Stack Section ─────────────────────
+  const emaSection = section(`EMA Stack — ${ema1}/${ema2}/${ema3}/${ema4} Trend Bias`, 'var(--tx2)',
+    `${emaRow('Short',  r.es15.bull9_21,   ema1, ema2, 'short-term')}
+     ${emaRow('Medium', r.es15.bull21_50,  ema2, ema3, 'medium-term')}
+     ${emaRow('Long',   r.es1h.bull50_200, ema3, ema4, 'long-term')}
+     <div style="margin-top:10px;padding:10px;border-radius:10px;background:${r.es1h.aligned?'var(--bu-dim)':r.es1h.bearAligned?'var(--se-dim)':'var(--sur)'};border:1px solid ${r.es1h.aligned?'var(--bu-bor)':r.es1h.bearAligned?'var(--se-bor)':'var(--bor)'}">
+       <div style="font-size:13px;font-weight:800;color:${r.es1h.aligned?'var(--bu)':r.es1h.bearAligned?'var(--se)':'var(--tx2)'}">
+         ${r.es1h.aligned?'ALL EMAs BULLISH — High-conviction uptrend':r.es1h.bearAligned?'ALL EMAs BEARISH — High-conviction downtrend':'MIXED — Wait for EMA alignment before entering'}
+       </div>
+       <div style="font-size:11px;color:var(--tx3);margin-top:4px">
+         ${r.es1h.aligned?`All 4 EMAs (${ema1}/${ema2}/${ema3}/${ema4}) are stacked in bullish order. This is the strongest trend signal. Enter only in BUY direction.`:r.es1h.bearAligned?`All 4 EMAs are stacked in bearish order. Strong downtrend. Enter only in SELL direction.`:`EMAs are not fully aligned. Price is in a transitional phase. Wait for all 4 to stack in one direction before scalping.`}
+       </div>
+     </div>`
+  );
+
+  // ── 4. Bollinger Bands Section ───────────────
+  const bb = r.bb15, bbp = bb.pct;
+  const bbSection = section('Bollinger Bands — Volatility & Price Extremes', 'var(--tx2)',
+    `${row('Upper Band (Resistance)', fmtN(bb.upper,dp), 'color:var(--se)')}
+     ${row('Middle Band (MA)', fmtN(bb.mid,dp), 'color:var(--tx2)')}
+     ${row('Lower Band (Support)', fmtN(bb.lower,dp), 'color:var(--bu)')}
+     ${row('Price Position', (bbp*100).toFixed(0)+'%', bbp<0.2?'color:var(--bu)':bbp>0.8?'color:var(--se)':'color:var(--tx2)')}
+     <div style="margin:8px 0 4px">
+       <div style="height:8px;background:var(--sur);border-radius:4px;overflow:hidden">
+         <div style="height:100%;width:${(bbp*100).toFixed(0)}%;background:${bbp<0.2?'var(--bu)':bbp>0.8?'var(--se)':'var(--tx2)'};border-radius:4px;transition:width .4s"></div>
+       </div>
+       <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);margin-top:3px"><span>Lower</span><span>Middle</span><span>Upper</span></div>
+     </div>
+     <div style="font-size:12px;color:var(--tx2);margin-top:6px">
+       ${bbp<0.10?'<strong style="color:var(--bu)">Near lower band — high-probability bounce zone. Strong BUY setup if RSI also oversold.</strong>':bbp>0.90?'<strong style="color:var(--se)">Near upper band — high-probability rejection zone. Strong SELL setup if RSI also overbought.</strong>':bbp<0.30?'In lower half of bands — mild bullish lean. Watch for momentum confirmation.':bbp>0.70?'In upper half of bands — mild bearish lean. Watch for exhaustion signals.':'In middle of bands — no extreme signal. Wait for price to reach band edges for best entries.'}
+     </div>`
+  );
+
+  // ── 5. Support & Resistance ──────────────────
+  const BS = r.buySetup, SS = r.sellSetup;
+  const srSection = section('Support & Resistance — Key Levels', 'var(--tx2)',
+    `${row('Resistance 2 (R2)', fmtN(SS.t2,dp), 'color:var(--se)')}
+     ${row('Resistance 1 (R1)', fmtN(SS.t1,dp), 'color:var(--se)')}
+     ${row('SELL Entry Zone', fmtN(SS.entry,dp), 'color:var(--se);font-weight:800')}
+     <div style="padding:6px 10px;background:var(--sur);border-radius:8px;text-align:center;font-size:12px;color:var(--tx3);margin:4px 0">-- Current Price Zone --</div>
+     ${row('BUY Entry Zone', fmtN(BS.entry,dp), 'color:var(--bu);font-weight:800')}
+     ${row('Support 1 (S1)', fmtN(BS.t1,dp), 'color:var(--bu)')}
+     ${row('Support 2 (S2)', fmtN(BS.t2,dp), 'color:var(--bu)')}
+     ${row('Stop Loss (BUY)', fmtN(BS.s1,dp), 'color:var(--tx3)')}
+     ${row('Stop Loss (SELL)', fmtN(SS.s1,dp), 'color:var(--tx3)')}
+     <div style="font-size:11px;color:var(--tx3);margin-top:8px">ATR-based stops: ${mktName} uses ${isBTC?'1.5x':isGold?'1.5x':'2.5x'} ATR multiplier. Blended ATR: ${fmtN(r.bATR,dp)}</div>`
+  );
+
+  // ── 6. Session Section ───────────────────────
+  const sScore = r.sessScore;
+  const sessionSection = section('Session & Market Hours', 'var(--tx2)',
+    `${row('Session Score', (sScore*100).toFixed(0)+'%', sScore>0.5?'color:var(--bu)':sScore>0.25?'color:var(--tx2)':'color:var(--se)')}
+     <div style="height:8px;background:var(--sur);border-radius:4px;overflow:hidden;margin:6px 0">
+       <div style="height:100%;width:${(sScore*100).toFixed(0)}%;background:${sScore>0.5?'var(--bu)':sScore>0.25?'var(--tx2)':'var(--se)'};border-radius:4px"></div>
+     </div>
+     <div style="font-size:12px;color:var(--tx2);margin-top:4px">
+       ${isBTC
+         ? 'Bitcoin trades 24/7. Best volume during London (08:00-17:00 UTC) and NY (13:30-22:00 UTC) overlap. Asian session (00:00-08:00 UTC) has lower volume but still tradeable.'
+         : isGold
+         ? 'Gold is most active during London Open (08:00 UTC) and NY Open (13:30 UTC). Prime window: 13:30-17:00 UTC (London/NY overlap). Avoid trading outside these hours for best signal quality.'
+         : 'Silver is active during London/NY overlap (13:00-17:00 UTC) and also reacts to Asian session industrial news (23:00-08:00 UTC). Watch for China PMI and industrial data releases.'}
+     </div>`
+  );
+
+  // ── 7. Scalping Checklist ────────────────────
+  const emaAligned  = r.es15.aligned   || r.es15.bearAligned;
+  const emaAgree    = (r.es15.aligned  && r.es1h.aligned)  || (r.es15.bearAligned && r.es1h.bearAligned);
+  const rsiOK       = rsi15v > rsiOS + 5 && rsi15v < rsiOB - 5;
+  const rsiExtreme  = rsi15v < rsiOS || rsi15v > rsiOB;
+  const macdOK      = macdAgree;
+  const bbOK        = bbp < 0.15 || bbp > 0.85;
+  const sessOK      = sScore > 0.35;
+  const dir         = r.dominant;
+  const passCount   = [emaAgree, rsiOK||rsiExtreme, macdOK, sessOK].filter(Boolean).length;
+  const quality     = passCount >= 4 ? 'Excellent' : passCount >= 3 ? 'Good' : passCount >= 2 ? 'Moderate' : 'Weak';
+  const qualColor   = passCount >= 4 ? 'var(--bu)' : passCount >= 3 ? 'var(--bu)' : passCount >= 2 ? 'var(--tx2)' : 'var(--se)';
+
+  const checkSection = section('Scalping Checklist — Should You Trade Now?', qualColor,
+    `${badge(emaAgree,   emaAgree   ? `EMA stack aligned on both 15m and 1h — trend confirmed ${dir}` : 'EMA stack NOT aligned across timeframes — avoid entry, wait for alignment')}
+     ${badge(rsiOK||rsiExtreme, rsiExtreme ? `RSI in extreme zone (${rsi15v.toFixed(0)}) — high-probability ${rsi15v<rsiOS?'BUY reversal':'SELL reversal'} setup` : rsiOK ? `RSI neutral (${rsi15v.toFixed(0)}) — not in danger zone, ok to enter` : `RSI ambiguous (${rsi15v.toFixed(0)}) — check higher timeframe`)}
+     ${badge(macdOK,     macdOK     ? '15m and 1h MACD agree — momentum confirmation present' : '15m and 1h MACD disagree — conflicting momentum, higher risk')}
+     ${badge(bbOK,       bbOK       ? `BB at extreme (${(bbp*100).toFixed(0)}%) — price at band edge, mean-reversion opportunity` : `BB in middle range (${(bbp*100).toFixed(0)}%) — no band-edge entry signal`)}
+     ${badge(sessOK,     sessOK     ? `Session active (${(sScore*100).toFixed(0)}%) — good market participation` : `Low session activity (${(sScore*100).toFixed(0)}%) — low volume, signals less reliable`)}
+     <div style="margin-top:12px;padding:12px;border-radius:12px;background:${passCount>=3?'var(--bu-dim)':passCount>=2?'var(--sur)':'var(--se-dim)'};border:1.5px solid ${passCount>=3?'var(--bu-bor)':passCount>=2?'var(--bor)':'var(--se-bor)'}">
+       <div style="font-size:14px;font-weight:800;color:${qualColor}">Overall: ${quality} conditions to scalp ${dir}</div>
+       <div style="font-size:12px;color:var(--tx3);margin-top:4px">
+         ${passCount>=4?`All conditions met. ${dir} scalp has high-conviction backing. Enter near ${dir==='BUY'?fmtN(BS.entry,dp):fmtN(SS.entry,dp)} with stop at ${dir==='BUY'?fmtN(BS.s1,dp):fmtN(SS.s1,dp)}.`:passCount>=3?`Most conditions met. ${dir} scalp is viable but monitor for confirmation. Use smaller position size.`:passCount>=2?'Mixed signals. Consider waiting for better alignment before entering.':'Poor conditions. Multiple signals missing. Avoid trading — wait for clearer setup.'}
+       </div>
+     </div>`
+  );
+
+  // ── Assemble all sections ────────────────────
+  $('taTitle').textContent     = `Full Trade Analysis`;
+  $('taSubtitle').textContent  = mktName + ' — ' + new Date().toLocaleTimeString();
+  $('taBody').innerHTML = rsiSection + macdSection + emaSection + bbSection + srSection + sessionSection + checkSection;
+  $('tradeAnalysisModal').classList.add('open');
+}
+
 </script>
 
 <!-- Weekend Closed Modal for Gold/Silver -->
@@ -2113,5 +2312,27 @@ function showTfModal(tf) {
     <div class="modal-body" id="tfModalBody"></div>
   </div>
 </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         FULL TRADE ANALYSIS MODAL
+    ═══════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="tradeAnalysisModal">
+      <div class="modal" style="border-radius:20px 20px 0 0;max-height:92vh;overflow-y:auto;">
+        <div class="modal-drag"></div>
+        <div class="modal-hdr" style="border-bottom:2px solid var(--bor2);position:sticky;top:0;background:var(--sur);z-index:2;">
+          <div class="modal-title" id="taTitle" style="font-size:17px;">Full Trade Analysis</div>
+          <div class="modal-sub" id="taSubtitle">Loading...</div>
+        </div>
+        <div class="modal-body" style="padding:16px;display:flex;flex-direction:column;gap:14px;" id="taBody">
+          <div style="text-align:center;padding:40px;color:var(--tx3);">Analyse a market first</div>
+        </div>
+        <div style="padding:14px 16px 24px;">
+          <button onclick="document.getElementById('tradeAnalysisModal').classList.remove('open')"
+            style="width:100%;padding:14px;background:var(--sur2);border:1.5px solid var(--bor);border-radius:14px;color:var(--tx);font-size:15px;font-weight:700;cursor:pointer;">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
 </body>
 </html>
